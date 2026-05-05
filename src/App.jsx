@@ -84,37 +84,29 @@ function Paywall({ onSubscribe, loading }) {
 }
 
 export default function ReleyzApp() {
-  const [isSubscribed, setIsSubscribed]     = useState(false);
+  const [isSubscribed, setIsSubscribed]       = useState(true);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
-  const [userToken, setUserToken]           = useState(null);
-  const [drawerOpen, setDrawerOpen]         = useState(false);
-  const [activeSport, setActiveSport]       = useState(SPORTS[0]);
-  const [expandedSport, setExpandedSport]   = useState("soccer");
-  const [activeLeague, setActiveLeague]     = useState(SPORTS[0].leagues[0]);
-  const [matches, setMatches]               = useState([]);
-  const [loadingMatches, setLoadingMatches] = useState(false);
-  const [matchError, setMatchError]         = useState(null);
-  const [selectedMatch, setSelectedMatch]   = useState(null);
-  const [activeAnalysis, setActiveAnalysis] = useState(["full"]);
-  const [activePage, setActivePage]         = useState("matches");
+  const [userToken, setUserToken]             = useState("test");
+  const [drawerOpen, setDrawerOpen]           = useState(false);
+  const [activeSport, setActiveSport]         = useState(SPORTS[0]);
+  const [expandedSport, setExpandedSport]     = useState("soccer");
+  const [activeLeague, setActiveLeague]       = useState(SPORTS[0].leagues[0]);
+  const [matches, setMatches]                 = useState([]);
+  const [loadingMatches, setLoadingMatches]   = useState(false);
+  const [matchError, setMatchError]           = useState(null);
+  const [selectedMatch, setSelectedMatch]     = useState(null);
+  const [activeAnalysis, setActiveAnalysis]   = useState(["full"]);
+  const [activePage, setActivePage]           = useState("matches");
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [analysisTab, setAnalysisTab]       = useState("overview");
-  const [loadingMsg, setLoadingMsg]         = useState("");
-  const [valueHistory, setValueHistory]     = useState([]);
+  const [analysisResult, setAnalysisResult]   = useState(null);
+  const [analysisTab, setAnalysisTab]         = useState("overview");
+  const [loadingMsg, setLoadingMsg]           = useState("");
+  const [valueHistory, setValueHistory]       = useState([]);
   const analysisRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("releyz_token");
-    if (token) { setUserToken(token); setIsSubscribed(true); }
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-    if (sessionId) { localStorage.setItem("releyz_token", sessionId); setUserToken(sessionId); setIsSubscribed(true); window.history.replaceState({}, "", "/"); }
-  }, []);
-
-  useEffect(() => {
-    if (isSubscribed && activeLeague) fetchMatches(activeLeague);
-  }, [activeLeague, isSubscribed]);
+    if (activeLeague) fetchMatches(activeLeague);
+  }, [activeLeague]);
 
   const handleSubscribe = async () => {
     setSubscribeLoading(true);
@@ -260,7 +252,6 @@ export default function ReleyzApp() {
       `}</style>
 
       <div className={`drawer-overlay ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
-
       <div className={`drawer ${drawerOpen ? "open" : ""}`}>
         <div className="drawer-header">
           <div className="drawer-logo">RELEYZ</div>
@@ -292,7 +283,7 @@ export default function ReleyzApp() {
             </div>
           ))}
           <div className="drawer-section-label" style={{ marginTop: 8 }}>Account</div>
-          {["Settings","Help and Support","Terms and Privacy"].map((item, i) => (
+          {["Settings","Help and Support","Terms and Privacy"].map((item,i) => (
             <div key={i} className="drawer-sport-row" onClick={() => setDrawerOpen(false)}>
               <div className="drawer-sport-name">{item}</div>
             </div>
@@ -353,8 +344,8 @@ export default function ReleyzApp() {
                 <div style={{ fontSize: 12 }}>Open the menu to select a league</div>
               </div>
             )}
-            {matches.map((m, i) => (
-              <div key={i} className={`match-card ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i * 0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
+            {matches.map((m,i) => (
+              <div key={i} className={`match-card ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i*0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#0057ff", background: "#eef3ff", padding: "3px 9px", borderRadius: 5 }}>{activeSport.icon} {activeLeague.name}</div>
                   <div style={{ fontSize: 10, color: "#889" }}>📅 {m.date} · {m.time}</div>
@@ -433,7 +424,7 @@ export default function ReleyzApp() {
               </div>
               {analysisTab === "overview" && (
                 <>
-                  {analysisResult.sections?.map((s, i) => (
+                  {analysisResult.sections?.map((s,i) => (
                     <div key={i} className="section-card">
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                         <span style={{ fontSize: 18 }}>{s.icon}</span>
@@ -442,7 +433,7 @@ export default function ReleyzApp() {
                       <p style={{ fontSize: 12, color: "#556", lineHeight: 1.8, marginBottom: s.stats?.length ? 12 : 0 }}>{s.content}</p>
                       {s.stats?.length > 0 && (
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: s.keyPoints?.length ? 12 : 0 }}>
-                          {s.stats.map((st, j) => (
+                          {s.stats.map((st,j) => (
                             <div key={j} style={{ background: "#f5f7ff", border: "1px solid #e8eeff", borderRadius: 8, padding: "8px 10px", display: "flex", justifyContent: "space-between" }}>
                               <span style={{ fontSize: 10, color: "#889" }}>{st.label}</span>
                               <span style={{ fontSize: 12, fontWeight: 700 }}>{st.value} {st.trend === "up" ? "↑" : st.trend === "down" ? "↓" : "→"}</span>
@@ -450,7 +441,7 @@ export default function ReleyzApp() {
                           ))}
                         </div>
                       )}
-                      {s.keyPoints?.map((p, j) => (
+                      {s.keyPoints?.map((p,j) => (
                         <div key={j} style={{ display: "flex", gap: 8, marginBottom: 5 }}>
                           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#0057ff", marginTop: 5, flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: "#445", lineHeight: 1.6 }}>{p}</span>
@@ -466,7 +457,7 @@ export default function ReleyzApp() {
                   )}
                 </>
               )}
-              {analysisTab === "betting" && analysisResult.bettingAngles?.map((a, i) => (
+              {analysisTab === "betting" && analysisResult.bettingAngles?.map((a,i) => (
                 <div key={i} className="bet-card">
                   <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: "#889", marginBottom: 4 }}>{a.market}</div>
                   <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 800, color: "#0057ff", marginBottom: 8 }}>{a.pick}</div>
@@ -480,7 +471,7 @@ export default function ReleyzApp() {
               {analysisTab === "redflags" && (
                 <div className="section-card">
                   <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, color: "#cc3344", marginBottom: 12 }}>RISK FACTORS</div>
-                  {analysisResult.redFlags?.map((flag, i) => (
+                  {analysisResult.redFlags?.map((flag,i) => (
                     <div key={i} style={{ background: "#fff8f8", border: "1px solid #ffd0d0", borderRadius: 10, padding: "12px 14px", marginBottom: 8, display: "flex", gap: 10 }}>
                       <span style={{ color: "#dd4444", fontSize: 14 }}>⚠️</span>
                       <span style={{ fontSize: 12, color: "#774444", lineHeight: 1.6 }}>{flag}</span>
@@ -516,7 +507,7 @@ export default function ReleyzApp() {
               <button onClick={() => setActivePage("matches")} style={{ background: "#0057ff", color: "white", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Browse Matches</button>
             </div>
           ) : (
-            valueHistory.map((item, i) => (
+            valueHistory.map((item,i) => (
               <div key={i} style={{ background: "white", borderRadius: 18, padding: 16, marginBottom: 12, boxShadow: "0 2px 14px rgba(0,50,200,.06)", border: "2px solid #eef3ff" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "linear-gradient(135deg,#0047dd,#0099ff)", color: "white", fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 5, letterSpacing: 1, marginBottom: 10 }}>{item.value.toUpperCase()} VALUE</div>
                 <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{item.match}</div>
