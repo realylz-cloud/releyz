@@ -105,11 +105,47 @@ Return this exact JSON structure:
       .join("");
 
     const clean = fullText.replace(/```json|```/g, "").trim();
-    const start = clean.indexOf("{");
-    const end = clean.lastIndexOf("}");
+const start = clean.indexOf("{");
+const end = clean.lastIndexOf("}");
 
-    if (start === -1 || end === -1) {
-      return res.status(500).json({ error: "No JSON found in response" });
+if (start === -1 || end === -1) {
+  return res.status(500).json({ error: "No JSON found in response" });
+}
+
+let jsonStr = clean.substring(start, end + 1);
+
+// Fix common JSON issues Claude sometimes produces
+jsonStr = jsonStr
+  .replace(/,(\s*[}\]])/g, "$1")     // Remove trailing commas
+  .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
+  .replace(/:\s*'([^']*)'/g, ': "$1"')    // Replace single quotes with double quotes
+  .replace(/[\u0000-\u001F\u007F-\u009F]/g, " "); // Remove control characters
+
+let parsed;
+try {
+  parsed = JSON.parse(jsonStr);
+} catch (jsonErr) {
+  // If still failing return a basic structure with the verdict at least
+  return res.status(200).json({
+    matchTitle: `${req.body.match?.home} vs ${req.body.match?.away}`,
+    league: req.body.league?.name,
+    date: req.body.match?.date,
+    verdict: "Analysis completed — see summary below",
+    confidenceScore: 65,
+    sections: [{
+      title: "AI Analysis",
+      icon: "📊",
+      content: fullText.substring(0, 500),
+      stats: [],
+      keyPoints: ["Analysis generated successfully", "JSON formatting issue — showing raw output"]
+    }],
+    bettingAngles: [],
+    redFlags: ["Please try running the analysis again for full structured output"],
+    summary: "Analysis was generated but could not be fully parsed. Please try again."
+  });
+}
+
+return res.status(200).json(parsed);
     }
 
     const parsed = JSON.parse(clean.substring(start, end + 1));
