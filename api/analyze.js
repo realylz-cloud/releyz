@@ -6,31 +6,63 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { match, league, sport, analysisTypes } = req.body;
+  const { match, league } = req.body;
   if (!match || !league) return res.status(400).json({ error: "Missing data" });
 
-  const now = new Date();
-  const today = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
-  const seasonStart = month >= 8 ? year : year - 1;
-  const currentSeason = seasonStart + "/" + (seasonStart + 1);
-  const americanSeason = month >= 9 ? year : year - 1;
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({ error: "API key not configured" });
+  }
 
-  const homeTeam = match.home;
-  const awayTeam = match.away;
-  const leagueName = league.name;
-  const matchDate = match.date;
-  const matchTime = match.time || "TBD";
-  const matchVenue = match.venue || "TBD";
-  const sportLabel = sport ? sport.label : "Soccer";
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 500,
+        messages: [{
+          role: "user",
+          content: "Say hello and confirm you are working. Return only: {\"status\": \"ok\", \"message\": \"Releyz AI is working\"}"
+        }],
+      }),
+    });
 
-  const prompt =
-    "You are Releyz, an elite sports betting analyst. Today is " + today + ".\n\n" +
-    "Search the web for current information about this match then write an analysis.\n\n" +
-    "Match: " + homeTeam + " vs " + awayTeam + "\n" +
-    "League: " + leagueName + "\n" +
-    "Sport: " + sportLabel + "\n" +
-    "Date: " + matchDate + " at " + matchTime + "\n" +
-    "Venue: " + matchVenue + "\n" +
-    "Season: " + cu
+    const text = await response.text();
+    const data = JSON.parse(text);
+
+    if (data.error) {
+      return res.status(500).json({ error: data.error.message });
+    }
+
+    return res.status(200).json({
+      matchTitle: match.home + " vs " + match.away,
+      league: league.name,
+      date: match.date,
+      verdict: "Test successful - AI is connected",
+      confidenceScore: 70,
+      sections: [{
+        title: "Connection Test",
+        icon: "✅",
+        content: "API is working correctly. Full analysis will appear here.",
+        stats: [],
+        keyPoints: ["API connected", "Ready for full analysis", "Commit full code next"]
+      }],
+      bettingAngles: [{
+        market: "Test",
+        pick: "API Working",
+        reasoning: "Connection confirmed",
+        risk: "Low",
+        value: "Good"
+      }],
+      redFlags: ["This is a test response"],
+      summary: "API connection confirmed and working correctly."
+    });
+
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
