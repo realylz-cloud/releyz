@@ -13,7 +13,6 @@ module.exports = async function handler(req, res) {
   }
 
   const now = new Date();
-
   const today = now.toLocaleDateString("en-GB", {
     weekday: "long", day: "numeric", month: "long", year: "numeric"
   });
@@ -34,34 +33,53 @@ module.exports = async function handler(req, res) {
   const sportLabel = sport ? sport.label : "Soccer";
   const analysisLabel = (analysisTypes || ["full"]).join(", ");
 
-  const prompt = "You are Releyz, an elite sports betting analyst writing on " + today + ".\n\n" +
-    "IMPORTANT: Today is " + today + ". Base your entire analysis on the CURRENT " + currentSeason + " season for European soccer. For American sports use the " + americanSeason + " season. Always use the most recent real data available as of today. Never reference old seasons as current.\n\n" +
-    "Analyze this match:\n" +
+  const prompt = "You are Releyz, an elite sports betting analyst. Today is " + today + ".\n\n" +
+    "STEP 1: Before writing anything, search the web for the following:\n" +
+    "- Search: " + homeTeam + " " + leagueName + " form " + year + "\n" +
+    "- Search: " + awayTeam + " " + leagueName + " form " + year + "\n" +
+    "- Search: " + homeTeam + " vs " + awayTeam + " " + year + " preview\n" +
+    "- Search: " + homeTeam + " injuries suspensions " + today + "\n" +
+    "- Search: " + awayTeam + " injuries suspensions " + today + "\n" +
+    "- Search: " + homeTeam + " " + awayTeam + " head to head\n\n" +
+    "STEP 2: Use ONLY the information you find from those searches. Do not use your training data for current form, squad details, or injuries. Your training data is outdated. The web search results are the truth.\n\n" +
+    "STEP 3: Based on what you find, write a deep professional betting analysis for:\n" +
     "Match: " + homeTeam + " vs " + awayTeam + "\n" +
     "League: " + leagueName + "\n" +
     "Sport: " + sportLabel + "\n" +
     "Date: " + matchDate + " at " + matchTime + "\n" +
     "Venue: " + matchVenue + "\n" +
-    "Analysis: " + analysisLabel + "\n\n" +
-    "Return ONLY valid JSON. No markdown. No text outside the JSON. Here is the exact structure to follow:\n\n" +
+    "Season: " + currentSeason + " (American sports: " + americanSeason + ")\n\n" +
+    "STEP 4: Return ONLY valid JSON. No markdown. No explanation. Just the JSON object.\n\n" +
     '{"matchTitle":"' + homeTeam + " vs " + awayTeam + '",' +
     '"league":"' + leagueName + '",' +
     '"date":"' + matchDate + '",' +
-    '"verdict":"One sharp specific betting verdict sentence based on current form",' +
+    '"verdict":"One sharp specific verdict based on what you found in the web searches",' +
     '"confidenceScore":72,' +
     '"sections":[' +
-    '{"title":"Current Form and Season Context","icon":"📈","content":"3-4 sentences analyzing both teams current form in the ' + currentSeason + ' season. Mention recent results league position and momentum. Be specific with numbers.","stats":[{"label":"Home Last 5","value":"W W D W L","trend":"up"},{"label":"Away Last 5","value":"L W W L W","trend":"neutral"},{"label":"Home Position","value":"3rd","trend":"up"},{"label":"Away Position","value":"7th","trend":"down"}],"keyPoints":["Specific insight about home team","Specific insight about away team","How form affects this matchup"]},' +
-    '{"title":"Head to Head History","icon":"⚔️","content":"2-3 sentences about historical record between these teams and what patterns exist.","stats":[{"label":"H2H Last 5","value":"3W 1D 1L","trend":"up"},{"label":"Last Meeting","value":"2-1 Home Win","trend":"neutral"},{"label":"Avg Goals H2H","value":"2.8 per game","trend":"up"}],"keyPoints":["Key H2H pattern","What the record suggests","Context from recent meetings"]},' +
-    '{"title":"Key Players and Team News","icon":"🏥","content":"2-3 sentences about important players for both sides and any injury or suspension concerns as of ' + today + '.","stats":[{"label":"Home Injuries","value":"1 doubt","trend":"neutral"},{"label":"Away Injuries","value":"2 out","trend":"down"}],"keyPoints":["Key player to watch home side","Key absence or concern away side","How team news affects betting"]},' +
-    '{"title":"Tactical Analysis","icon":"🧠","content":"3-4 sentences on how this game will be played tactically. What type of game should bettors expect.","stats":[{"label":"Home Avg Goals","value":"1.8 per game","trend":"up"},{"label":"Away Avg Goals","value":"1.4 per game","trend":"neutral"},{"label":"Home Clean Sheets","value":"6 in 15","trend":"neutral"},{"label":"Away Clean Sheets","value":"4 in 15","trend":"down"}],"keyPoints":["How home team sets up","How away team approaches","What tactical matchup suggests"]}' +
+    '{"title":"Current Form and Season Context","icon":"📈",' +
+    '"content":"Based on your web search results write 3-4 sentences about both teams current form in the ' + currentSeason + ' season. Use only what you actually found in the searches. Be specific with recent results and league position.",' +
+    '"stats":[{"label":"Home Last 5","value":"W W D W L","trend":"up"},{"label":"Away Last 5","value":"L W W L W","trend":"neutral"},{"label":"Home Position","value":"3rd","trend":"up"},{"label":"Away Position","value":"7th","trend":"down"}],' +
+    '"keyPoints":["Real insight from web search about home team","Real insight from web search about away team","How current form affects this matchup"]},' +
+    '{"title":"Head to Head History","icon":"⚔️",' +
+    '"content":"Based on your H2H search write 2-3 sentences about recent meetings between these teams and what patterns exist.",' +
+    '"stats":[{"label":"H2H Last 5","value":"3W 1D 1L","trend":"up"},{"label":"Last Meeting","value":"2-1 Home Win","trend":"neutral"},{"label":"Avg Goals H2H","value":"2.8 per game","trend":"up"}],' +
+    '"keyPoints":["Real H2H pattern from search","What the record suggests","Context from recent meetings"]},' +
+    '{"title":"Key Players and Team News","icon":"🏥",' +
+    '"content":"Based on your injury and squad searches write 2-3 sentences about the current squad situation as of ' + today + '. Name the actual players who are important right now based on what you found. Do not name players who have left the club.",' +
+    '"stats":[{"label":"Home Injuries","value":"Update from search","trend":"neutral"},{"label":"Away Injuries","value":"Update from search","trend":"down"}],' +
+    '"keyPoints":["Real key player for home side from search","Real key absence or concern from search","How current team news affects betting"]},' +
+    '{"title":"Tactical Analysis","icon":"🧠",' +
+    '"content":"3-4 sentences on how this specific game is likely to be played based on both teams current style and form. What type of game should bettors expect.",' +
+    '"stats":[{"label":"Home Avg Goals","value":"1.8 per game","trend":"up"},{"label":"Away Avg Goals","value":"1.4 per game","trend":"neutral"},{"label":"Home Clean Sheets","value":"6 in 15","trend":"neutral"},{"label":"Away Clean Sheets","value":"4 in 15","trend":"down"}],' +
+    '"keyPoints":["How home team sets up this season","How away team plays on the road","What this tactical matchup means for bettors"]}' +
     '],' +
     '"bettingAngles":[' +
-    '{"market":"Match Winner","pick":"Your pick here","reasoning":"2-3 sentences on why this bet has value based on current form and analysis","risk":"Low","value":"Good"},' +
-    '{"market":"Total Goals","pick":"Over or Under 2.5","reasoning":"2-3 sentences on why this total makes sense based on scoring patterns","risk":"Medium","value":"Excellent"},' +
-    '{"market":"Both Teams to Score","pick":"Yes or No","reasoning":"2-3 sentences based on defensive records and attacking threat","risk":"Medium","value":"Good"}' +
+    '{"market":"Match Winner","pick":"Specific pick based on your research","reasoning":"2-3 sentences on why this bet has value based on what you found in the web searches","risk":"Low","value":"Good"},' +
+    '{"market":"Total Goals","pick":"Over or Under 2.5","reasoning":"2-3 sentences based on actual scoring data you found","risk":"Medium","value":"Excellent"},' +
+    '{"market":"Both Teams to Score","pick":"Yes or No","reasoning":"2-3 sentences based on actual defensive and attacking data you found","risk":"Medium","value":"Good"}' +
     '],' +
-    '"redFlags":["Specific current risk factor","Any injury suspension or rotation concern","External factor like weather or motivation"],' +
-    '"summary":"3 sentences giving the bettor a clear overall picture. Start with the strongest recommendation. End with what to watch out for. Write like advice from a sharp friend who knows the sport."}';
+    '"redFlags":["Real current risk you found in searches","Real injury or suspension concern from today","Real external factor like fixture congestion or motivation"],' +
+    '"summary":"3 sentences. Start with your strongest bet recommendation. Explain the key reason briefly. End with the main risk to watch. Write like a sharp knowledgeable friend not a robot."}';
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -70,10 +88,16 @@ module.exports = async function handler(req, res) {
         "Content-Type": "application/json",
         "x-api-key": process.env.ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "web-search-2025-03-05",
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 2000,
+        tools: [{
+          type: "web_search_20250305",
+          name: "web_search",
+          max_uses: 6,
+        }],
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -100,6 +124,10 @@ module.exports = async function handler(req, res) {
       if (data.content[i].type === "text") {
         fullText += data.content[i].text;
       }
+    }
+
+    if (!fullText || fullText.length === 0) {
+      return res.status(500).json({ error: "No text in response" });
     }
 
     var start = fullText.indexOf("{");
@@ -139,17 +167,24 @@ module.exports = async function handler(req, res) {
           icon: "📊",
           content: fullText.replace(/[{}"\\]/g, "").replace(/\s+/g, " ").substring(0, 800),
           stats: [],
-          keyPoints: ["Analysis generated", "See betting angles for recommendations", "Run again for full structured output"]
+          keyPoints: [
+            "Analysis generated successfully",
+            "See betting angles for recommendations",
+            "Run again for full structured output"
+          ]
         }],
         bettingAngles: [{
           market: "Match Winner",
           pick: homeTeam + " or " + awayTeam,
-          reasoning: "Based on current form and tactical analysis. Run again for detailed breakdown.",
+          reasoning: "Based on current form and tactical analysis. Run again for full breakdown.",
           risk: "Medium",
           value: "Good"
         }],
-        redFlags: ["Always research before betting", "Past performance does not guarantee future results"],
-        summary: summary || "Analysis generated successfully. Run again for the full structured breakdown."
+        redFlags: [
+          "Always research before betting",
+          "Past performance does not guarantee future results"
+        ],
+        summary: summary || "Analysis generated. Run again for the full structured breakdown."
       };
     }
 
