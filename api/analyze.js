@@ -12,6 +12,19 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "Missing data" });
   }
 
+  // ── AUTO DATE & SEASON CALCULATION ──────────────────────────
+  const now = new Date();
+  const today = now.toLocaleDateString("en-GB", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric"
+  });
+
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  const seasonStart = month >= 8 ? year : year - 1;
+  const seasonEnd = seasonStart + 1;
+  const currentSeason = seasonStart + "/" + seasonEnd;
+  const americanSeason = month >= 9 ? year : year - 1;
+
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -22,10 +35,130 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [{
           role: "user",
-          content: "You are a sports betting analyst. Analyze this match and return ONLY a JSON object. No markdown. No explanation. Just the JSON.\n\nMatch: " + match.home + " vs " + match.away + "\nLeague: " + league.name + "\nDate: " + match.date + "\n\nReturn exactly this structure:\n{\"matchTitle\":\"" + match.home + " vs " + match.away + "\",\"league\":\"" + league.name + "\",\"date\":\"" + match.date + "\",\"verdict\":\"Your betting verdict here\",\"confidenceScore\":70,\"sections\":[{\"title\":\"Team Form\",\"icon\":\"📊\",\"content\":\"Analysis of both teams recent form and performance\",\"stats\":[{\"label\":\"Home Form\",\"value\":\"W W L W W\",\"trend\":\"up\"},{\"label\":\"Away Form\",\"value\":\"L W W L W\",\"trend\":\"neutral\"}],\"keyPoints\":[\"Key insight about home team\",\"Key insight about away team\",\"Key tactical point\"]}],\"bettingAngles\":[{\"market\":\"Match Winner\",\"pick\":\"" + match.home + " Win\",\"reasoning\":\"Reason this bet has value\",\"risk\":\"Medium\",\"value\":\"Good\"},{\"market\":\"Total Goals\",\"pick\":\"Over 2.5 Goals\",\"reasoning\":\"Both teams have been scoring\",\"risk\":\"Low\",\"value\":\"Excellent\"}],\"redFlags\":[\"Potential injury concerns\",\"Away team recent poor form\"],\"summary\":\"Overall 2 sentence summary for the bettor\"}"
+          content: `You are Releyz, an elite sports betting analyst writing on ${today}.
+
+IMPORTANT: Today is ${today}. Base your entire analysis on the CURRENT ${currentSeason} season for European soccer and leagues that run across two calendar years. For American sports (NBA, NFL, MLB, NHL, UFC) use the ${americanSeason} season. Always use the most recent real data available as of today. Never reference old seasons as if they are current.
+
+Analyze this upcoming match with the depth and quality of a professional betting analyst:
+
+Match: ${match.home} vs ${match.away}
+League: ${league.name}
+Sport: ${sport ? sport.label : "Soccer"}
+Date: ${match.date} at ${match.time}
+Venue: ${match.venue || "TBD"}
+Analysis requested: ${(analysisTypes || ["full"]).join(", ")}
+
+Write a thorough, insightful analysis covering:
+- Current form of both teams in the ${currentSeason} season
+- Head to head record and what it tells us
+- Key players, injuries and suspensions as of ${today}
+- Tactical matchup and how the game is likely to play out
+- The best betting angles with clear reasoning
+- What could go wrong
+
+Return ONLY this exact JSON structure with no markdown and no text outside it:
+{
+  "matchTitle": "${match.home} vs ${match.away}",
+  "league": "${league.name}",
+  "date": "${match.date}",
+  "verdict": "One sharp specific betting verdict sentence based on current form",
+  "confidenceScore": 72,
+  "sections": [
+    {
+      "title": "Current Form & Season Context",
+      "icon": "📈",
+      "content": "Write 3-4 sentences analyzing both teams current form in the ${currentSeason} season. Mention their recent results, where they sit in the table, momentum, and any context that matters for this specific game. Be specific with results and numbers.",
+      "stats": [
+        {"label": "Home Last 5", "value": "W W D W L", "trend": "up"},
+        {"label": "Away Last 5", "value": "L W W L W", "trend": "neutral"},
+        {"label": "Home Position", "value": "3rd", "trend": "up"},
+        {"label": "Away Position", "value": "7th", "trend": "down"}
+      ],
+      "keyPoints": [
+        "Specific insight about home team current form",
+        "Specific insight about away team current form",
+        "How their current form makes this matchup interesting"
+      ]
+    },
+    {
+      "title": "Head to Head History",
+      "icon": "⚔️",
+      "content": "Write 2-3 sentences about the historical record between these teams. What does the H2H tell us about likely outcomes? Are there any notable patterns in how these teams play each other?",
+      "stats": [
+        {"label": "H2H Last 5", "value": "3W 1D 1L", "trend": "up"},
+        {"label": "Last Meeting", "value": "2-1 Home Win", "trend": "neutral"},
+        {"label": "Avg Goals H2H", "value": "2.8 per game", "trend": "up"}
+      ],
+      "keyPoints": [
+        "Key H2H pattern or trend",
+        "What the record suggests about this fixture",
+        "Any relevant context from recent meetings"
+      ]
+    },
+    {
+      "title": "Key Players & Team News",
+      "icon": "🏥",
+      "content": "Write 2-3 sentences about the most important players for both sides and any injury or suspension concerns as of ${today}. Who are the players that will make the difference in this game?",
+      "stats": [
+        {"label": "Home Injuries", "value": "1 doubt", "trend": "neutral"},
+        {"label": "Away Injuries", "value": "2 out", "trend": "down"}
+      ],
+      "keyPoints": [
+        "Key player to watch for home side",
+        "Key player or absence for away side",
+        "How team news affects the betting picture"
+      ]
+    },
+    {
+      "title": "Tactical Analysis",
+      "icon": "🧠",
+      "content": "Write 3-4 sentences breaking down how this game is likely to be played tactically. What are each teams strengths and weaknesses? How do their styles match up? What type of game should bettors expect — open tight high scoring or defensive?",
+      "stats": [
+        {"label": "Home Avg Goals", "value": "1.8 per game", "trend": "up"},
+        {"label": "Away Avg Goals", "value": "1.4 per game", "trend": "neutral"},
+        {"label": "Home Clean Sheets", "value": "6 in 15", "trend": "neutral"},
+        {"label": "Away Clean Sheets", "value": "4 in 15", "trend": "down"}
+      ],
+      "keyPoints": [
+        "How home team is likely to set up",
+        "How away team is likely to approach this game",
+        "What type of match this tactical matchup suggests"
+      ]
+    }
+  ],
+  "bettingAngles": [
+    {
+      "market": "Match Winner",
+      "pick": "Specific pick here",
+      "reasoning": "2-3 sentences explaining exactly why this bet has value based on current form H2H and tactical analysis",
+      "risk": "Low",
+      "value": "Good"
+    },
+    {
+      "market": "Total Goals",
+      "pick": "Over or Under 2.5 Goals",
+      "reasoning": "2-3 sentences explaining why this total makes sense based on both teams scoring patterns and how the game is likely to play out",
+      "risk": "Medium",
+      "value": "Excellent"
+    },
+    {
+      "market": "Both Teams to Score",
+      "pick": "Yes or No",
+      "reasoning": "2-3 sentences explaining the reasoning based on defensive records and attacking threat",
+      "risk": "Medium",
+      "value": "Good"
+    }
+  ],
+  "redFlags": [
+    "Specific current risk factor that could affect the result",
+    "Any injury suspension or rotation concern as of ${today}",
+    "Any external factor like weather fixture congestion or motivation"
+  ],
+  "summary": "Write 3 sentences giving the bettor a clear overall picture. Start with the strongest betting recommendation explain the reasoning briefly and end with what to watch out for. Make it feel like advice from a sharp friend who really knows their sport."
+}`
         }],
       }),
     });
@@ -70,24 +203,27 @@ module.exports = async function handler(req, res) {
         matchTitle: match.home + " vs " + match.away,
         league: league.name,
         date: match.date,
-        verdict: "Analysis completed successfully",
+        verdict: "Analysis completed — see summary below",
         confidenceScore: 68,
         sections: [{
           title: "Match Analysis",
           icon: "📊",
-          content: fullText.substring(0, 400),
+          content: fullText.substring(0, 600),
           stats: [],
-          keyPoints: ["Analysis generated", "Try again for full structured output"]
+          keyPoints: [
+            "Analysis generated successfully",
+            "Run again for full structured output"
+          ]
         }],
         bettingAngles: [{
           market: "Match Winner",
-          pick: match.home + " or " + match.away,
-          reasoning: "See analysis above",
+          pick: "See analysis above",
+          reasoning: "Full analysis generated. Run again for structured betting angles.",
           risk: "Medium",
           value: "Good"
         }],
-        redFlags: ["Always do your own research before betting"],
-        summary: "Analysis was generated. Run again for full structured breakdown."
+        redFlags: ["Always do your own research before placing bets"],
+        summary: "Analysis was generated successfully. Run again for the full structured breakdown."
       });
     }
 
