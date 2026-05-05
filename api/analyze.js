@@ -138,7 +138,22 @@ module.exports = async function handler(req, res) {
     }
 
     var jsonStr = fullText.substring(start, end + 1);
-    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, "$1");
+
+jsonStr = jsonStr
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .replace(/,(\s*[}\]])/g, "$1")
+  .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+  .replace(/\t/g, " ")
+  .replace(/\n/g, " ")
+  .replace(/\r/g, "")
+  .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+  .replace(/:\s*'([^']*?)'/g, ': "$1"')
+  .replace(/,\s*,/g, ",")
+  .replace(/\[\s*,/g, "[")
+  .replace(/,\s*\]/g, "]")
+  .replace(/\{\s*,/g, "{")
+  .replace(/,\s*\}/g, "}");
 
     var parsed;
     try {
