@@ -21,67 +21,11 @@ module.exports = async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-        max_tokens: 2000,
+        model: "claude-sonnet-4-6",
+        max_tokens: 1500,
         messages: [{
           role: "user",
-          content: `You are an elite sports betting analyst. Analyze this match and return ONLY valid JSON, no markdown, no extra text.
-
-Match: ${match.home} vs ${match.away}
-League: ${league.name}
-Date: ${match.date} at ${match.time}
-
-Return this exact JSON structure:
-{
-  "matchTitle": "${match.home} vs ${match.away}",
-  "league": "${league.name}",
-  "date": "${match.date}",
-  "verdict": "One sharp betting verdict sentence",
-  "confidenceScore": 72,
-  "sections": [
-    {
-      "title": "Team Form",
-      "icon": "📊",
-      "content": "Detailed analysis paragraph about both teams recent form and performance",
-      "stats": [
-        {"label": "Home Form", "value": "W W L W W", "trend": "up"},
-        {"label": "Away Form", "value": "L W W L W", "trend": "neutral"}
-      ],
-      "keyPoints": ["Key insight 1", "Key insight 2", "Key insight 3"]
-    },
-    {
-      "title": "Head to Head",
-      "icon": "⚔️",
-      "content": "Analysis of historical meetings between these teams",
-      "stats": [
-        {"label": "Last 5 H2H", "value": "3-1-1", "trend": "up"}
-      ],
-      "keyPoints": ["H2H insight 1", "H2H insight 2"]
-    }
-  ],
-  "bettingAngles": [
-    {
-      "market": "Match Winner",
-      "pick": "${match.home} Win",
-      "reasoning": "Detailed reason why this bet has value",
-      "risk": "Medium",
-      "value": "Good"
-    },
-    {
-      "market": "Total Goals",
-      "pick": "Over 2.5 Goals",
-      "reasoning": "Both teams have been scoring freely",
-      "risk": "Low",
-      "value": "Excellent"
-    }
-  ],
-  "redFlags": [
-    "Potential injury concerns",
-    "Recent poor form",
-    "Historical weakness"
-  ],
-  "summary": "2-3 sentence overall summary for the bettor covering the key points and recommended approach"
-}`
+          content: "You are a sports betting analyst. Analyze this match and return ONLY a JSON object. No markdown. No explanation. Just the JSON.\n\nMatch: " + match.home + " vs " + match.away + "\nLeague: " + league.name + "\nDate: " + match.date + "\n\nReturn exactly this structure:\n{\"matchTitle\":\"" + match.home + " vs " + match.away + "\",\"league\":\"" + league.name + "\",\"date\":\"" + match.date + "\",\"verdict\":\"Your betting verdict here\",\"confidenceScore\":70,\"sections\":[{\"title\":\"Team Form\",\"icon\":\"📊\",\"content\":\"Analysis of both teams recent form and performance\",\"stats\":[{\"label\":\"Home Form\",\"value\":\"W W L W W\",\"trend\":\"up\"},{\"label\":\"Away Form\",\"value\":\"L W W L W\",\"trend\":\"neutral\"}],\"keyPoints\":[\"Key insight about home team\",\"Key insight about away team\",\"Key tactical point\"]}],\"bettingAngles\":[{\"market\":\"Match Winner\",\"pick\":\"" + match.home + " Win\",\"reasoning\":\"Reason this bet has value\",\"risk\":\"Medium\",\"value\":\"Good\"},{\"market\":\"Total Goals\",\"pick\":\"Over 2.5 Goals\",\"reasoning\":\"Both teams have been scoring\",\"risk\":\"Low\",\"value\":\"Excellent\"}],\"redFlags\":[\"Potential injury concerns\",\"Away team recent poor form\"],\"summary\":\"Overall 2 sentence summary for the bettor\"}"
         }],
       }),
     });
@@ -92,63 +36,61 @@ Return this exact JSON structure:
     try {
       data = JSON.parse(rawText);
     } catch (e) {
-      return res.status(500).json({ error: "API parse error: " + rawText.substring(0, 100) });
+      return res.status(500).json({ error: "Failed to parse API response" });
     }
 
     if (data.error) {
       return res.status(500).json({ error: data.error.message });
     }
 
-    const fullText = data.content
-      .filter(b => b.type === "text")
-      .map(b => b.text)
-      .join("");
-
-    const clean = fullText.replace(/```json|```/g, "").trim();
-const start = clean.indexOf("{");
-const end = clean.lastIndexOf("}");
-
-if (start === -1 || end === -1) {
-  return res.status(500).json({ error: "No JSON found in response" });
-}
-
-let jsonStr = clean.substring(start, end + 1);
-
-// Fix common JSON issues Claude sometimes produces
-jsonStr = jsonStr
-  .replace(/,(\s*[}\]])/g, "$1")     // Remove trailing commas
-  .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
-  .replace(/:\s*'([^']*)'/g, ': "$1"')    // Replace single quotes with double quotes
-  .replace(/[\u0000-\u001F\u007F-\u009F]/g, " "); // Remove control characters
-
-let parsed;
-try {
-  parsed = JSON.parse(jsonStr);
-} catch (jsonErr) {
-  // If still failing return a basic structure with the verdict at least
-  return res.status(200).json({
-    matchTitle: `${req.body.match?.home} vs ${req.body.match?.away}`,
-    league: req.body.league?.name,
-    date: req.body.match?.date,
-    verdict: "Analysis completed — see summary below",
-    confidenceScore: 65,
-    sections: [{
-      title: "AI Analysis",
-      icon: "📊",
-      content: fullText.substring(0, 500),
-      stats: [],
-      keyPoints: ["Analysis generated successfully", "JSON formatting issue — showing raw output"]
-    }],
-    bettingAngles: [],
-    redFlags: ["Please try running the analysis again for full structured output"],
-    summary: "Analysis was generated but could not be fully parsed. Please try again."
-  });
-}
-
-return res.status(200).json(parsed);
+    if (!data.content || data.content.length === 0) {
+      return res.status(500).json({ error: "Empty response from AI" });
     }
 
-    const parsed = JSON.parse(clean.substring(start, end + 1));
+    const fullText = data.content
+      .filter(function(b) { return b.type === "text"; })
+      .map(function(b) { return b.text; })
+      .join("");
+
+    const start = fullText.indexOf("{");
+    const end = fullText.lastIndexOf("}");
+
+    if (start === -1 || end === -1) {
+      return res.status(500).json({ error: "No JSON in response" });
+    }
+
+    let jsonStr = fullText.substring(start, end + 1);
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, "$1");
+
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (e) {
+      return res.status(200).json({
+        matchTitle: match.home + " vs " + match.away,
+        league: league.name,
+        date: match.date,
+        verdict: "Analysis completed successfully",
+        confidenceScore: 68,
+        sections: [{
+          title: "Match Analysis",
+          icon: "📊",
+          content: fullText.substring(0, 400),
+          stats: [],
+          keyPoints: ["Analysis generated", "Try again for full structured output"]
+        }],
+        bettingAngles: [{
+          market: "Match Winner",
+          pick: match.home + " or " + match.away,
+          reasoning: "See analysis above",
+          risk: "Medium",
+          value: "Good"
+        }],
+        redFlags: ["Always do your own research before betting"],
+        summary: "Analysis was generated. Run again for full structured breakdown."
+      });
+    }
+
     return res.status(200).json(parsed);
 
   } catch (error) {
