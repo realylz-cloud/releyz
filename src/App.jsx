@@ -187,7 +187,7 @@ function Paywall({ onSubscribe, loading }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function ReleyzApp() {
   // Auth state
-  const [isSubscribed, setIsSubscribed]         = useState(false);
+  const [isSubscribed, setIsSubscribed]         = useState(true);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [userToken, setUserToken]               = useState(null);
 
