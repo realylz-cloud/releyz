@@ -5,8 +5,8 @@ const API_BASE = "/api";
 const SPORTS = [
   { id: "soccer", label: "Soccer", icon: "⚽", count: 24, leagues: [{ id: "39", apiId: "39", name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", season: 2025 },{ id: "140", apiId: "140", name: "La Liga", flag: "🇪🇸", season: 2025 },{ id: "78", apiId: "78", name: "Bundesliga", flag: "🇩🇪", season: 2025 },{ id: "135", apiId: "135", name: "Serie A", flag: "🇮🇹", season: 2025 },{ id: "61", apiId: "61", name: "Ligue 1", flag: "🇫🇷", season: 2025 },{ id: "2", apiId: "2", name: "Champions League", flag: "🌍", season: 2025 },{ id: "253", apiId: "253", name: "MLS", flag: "🇺🇸", season: 2025 }] },
   { id: "basketball", label: "Basketball", icon: "🏀", count: 8, leagues: [{ id: "12", apiId: "12", name: "NBA", flag: "🇺🇸", season: 2025 },{ id: "120", apiId: "120", name: "EuroLeague", flag: "🇪🇺", season: 2025 }] },
-  { id: "football", label: "Am. Football", icon: "🏈", count: 6, leagues: [{ id: "1", apiId: "1", name: "NFL", flag: "🇺🇸", season: 2025 },{ id: "2nfl", apiId: "2", name: "NCAA Football", flag: "🇺🇸", season: 2025 }] },
-  { id: "baseball", label: "Baseball", icon: "⚾", count: 12, leagues: [{ id: "1mlb", apiId: "1", name: "MLB", flag: "🇺🇸", season: 2025 }] },
+  { id: "football", label: "Am. Football", icon: "🏈", count: 6, leagues: [{ id: "1", apiId: "1", name: "NFL", flag: "🇺🇸", season: 2025 },{ id: "2nfl", apiId: "2nfl", name: "NCAA Football", flag: "🇺🇸", season: 2025 }] },
+  { id: "baseball", label: "Baseball", icon: "⚾", count: 12, leagues: [{ id: "1mlb", apiId: "1mlb", name: "MLB", flag: "🇺🇸", season: 2025 }] },
   { id: "hockey", label: "Hockey", icon: "🏒", count: 5, leagues: [{ id: "57", apiId: "57", name: "NHL", flag: "🇺🇸", season: 2025 }] },
   { id: "tennis", label: "Tennis", icon: "🎾", count: 18, leagues: [{ id: "atp", apiId: "atp", name: "ATP Tour", flag: "🌍", season: 2025 },{ id: "wta", apiId: "wta", name: "WTA Tour", flag: "🌍", season: 2025 }] },
   { id: "mma", label: "MMA / Boxing", icon: "🥊", count: 3, leagues: [{ id: "ufc", apiId: "ufc", name: "UFC", flag: "🌍", season: 2025 },{ id: "boxing", apiId: "boxing", name: "Boxing", flag: "🌍", season: 2025 }] },
@@ -94,6 +94,7 @@ export default function ReleyzApp() {
   const [matches, setMatches]                 = useState([]);
   const [loadingMatches, setLoadingMatches]   = useState(false);
   const [matchError, setMatchError]           = useState(null);
+  const [offSeason, setOffSeason]             = useState(null);
   const [selectedMatch, setSelectedMatch]     = useState(null);
   const [activeAnalysis, setActiveAnalysis]   = useState(["full"]);
   const [activePage, setActivePage]           = useState("matches");
@@ -122,31 +123,40 @@ export default function ReleyzApp() {
   const getFrontendFallback = (leagueId) => {
     const base = new Date();
     const d = [];
-    for (let i = 0; i < 10; i++) { const dt = new Date(base); dt.setDate(base.getDate() + i); d.push(dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })); }
+    for (let i = 0; i < 14; i++) { const dt = new Date(base); dt.setDate(base.getDate() + i); d.push(dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })); }
     const f = {
-      "39":  [{id:1,home:"Arsenal",away:"Man City",date:d[0],time:"16:30",venue:"Emirates Stadium",conf:74,verdict:"Home Win"},{id:2,home:"Liverpool",away:"Chelsea",date:d[2],time:"17:30",venue:"Anfield",conf:68,verdict:"Over 2.5"},{id:3,home:"Man Utd",away:"Tottenham",date:d[4],time:"15:00",venue:"Old Trafford",conf:61,verdict:"BTTS"},{id:4,home:"Newcastle",away:"Aston Villa",date:d[6],time:"15:00",venue:"St. James Park",conf:55,verdict:"Draw"}],
-      "140": [{id:5,home:"Real Madrid",away:"Barcelona",date:d[0],time:"21:00",venue:"Santiago Bernabeu",conf:81,verdict:"Away Win"},{id:6,home:"Atletico",away:"Sevilla",date:d[3],time:"19:00",venue:"Wanda Metropolitano",conf:66,verdict:"Home Win"}],
-      "78":  [{id:7,home:"Bayern",away:"Dortmund",date:d[1],time:"18:30",venue:"Allianz Arena",conf:78,verdict:"Home Win"},{id:8,home:"Leverkusen",away:"RB Leipzig",date:d[4],time:"15:30",venue:"BayArena",conf:63,verdict:"Over 2.5"}],
-      "135": [{id:9,home:"Inter Milan",away:"AC Milan",date:d[2],time:"20:45",venue:"San Siro",conf:76,verdict:"Home Win"},{id:10,home:"Juventus",away:"Napoli",date:d[5],time:"20:45",venue:"Juventus Stadium",conf:64,verdict:"Over 2.5"}],
-      "61":  [{id:11,home:"PSG",away:"Marseille",date:d[1],time:"21:00",venue:"Parc des Princes",conf:79,verdict:"Home Win"},{id:12,home:"Lyon",away:"Monaco",date:d[4],time:"19:00",venue:"Groupama Stadium",conf:61,verdict:"BTTS"}],
-      "2":   [{id:13,home:"Real Madrid",away:"Bayern Munich",date:d[2],time:"21:00",venue:"Santiago Bernabeu",conf:77,verdict:"Over 2.5"},{id:14,home:"Man City",away:"PSG",date:d[2],time:"21:00",venue:"Etihad Stadium",conf:70,verdict:"Home Win"}],
-      "253": [{id:15,home:"LA Galaxy",away:"LAFC",date:d[1],time:"21:30",venue:"Dignity Health Park",conf:58,verdict:"BTTS"},{id:16,home:"Inter Miami",away:"Atlanta Utd",date:d[3],time:"20:30",venue:"Chase Stadium",conf:65,verdict:"Home Win"}],
-      "12":  [{id:17,home:"LA Lakers",away:"Golden State",date:d[0],time:"22:30",venue:"Crypto.com Arena",conf:69,verdict:"Away Win"},{id:18,home:"Boston",away:"Miami Heat",date:d[1],time:"00:30",venue:"TD Garden",conf:72,verdict:"Home Win"}],
-      "1":   [{id:19,home:"Kansas City",away:"Buffalo Bills",date:d[3],time:"21:25",venue:"Arrowhead Stadium",conf:71,verdict:"Home Win"},{id:20,home:"SF 49ers",away:"Dallas",date:d[3],time:"21:25",venue:"Levis Stadium",conf:65,verdict:"Away Cover"}],
-      "1mlb":[{id:21,home:"NY Yankees",away:"Boston",date:d[0],time:"23:05",venue:"Yankee Stadium",conf:62,verdict:"Home Win"},{id:22,home:"LA Dodgers",away:"SF Giants",date:d[1],time:"02:10",venue:"Dodger Stadium",conf:70,verdict:"Home -1.5"}],
-      "57":  [{id:23,home:"Toronto",away:"Boston",date:d[0],time:"00:00",venue:"Scotiabank Arena",conf:67,verdict:"Home Win"},{id:24,home:"Colorado",away:"Vegas",date:d[2],time:"03:00",venue:"Ball Arena",conf:71,verdict:"Away Win"}],
-      "ufc": [{id:25,home:"Jon Jones",away:"Stipe Miocic",date:d[4],time:"04:00",venue:"T-Mobile Arena",conf:73,verdict:"Jones KO"}],
+      "39":   [{id:1,home:"Arsenal",away:"Man City",date:d[0],time:"16:30",venue:"Emirates Stadium",conf:74,verdict:"Home Win"},{id:2,home:"Liverpool",away:"Chelsea",date:d[2],time:"17:30",venue:"Anfield",conf:68,verdict:"Over 2.5"},{id:3,home:"Man Utd",away:"Tottenham",date:d[4],time:"15:00",venue:"Old Trafford",conf:61,verdict:"BTTS"}],
+      "140":  [{id:5,home:"Real Madrid",away:"Barcelona",date:d[0],time:"21:00",venue:"Santiago Bernabeu",conf:81,verdict:"Away Win"},{id:6,home:"Atletico",away:"Sevilla",date:d[3],time:"19:00",venue:"Wanda Metropolitano",conf:66,verdict:"Home Win"}],
+      "78":   [{id:7,home:"Bayern",away:"Dortmund",date:d[1],time:"18:30",venue:"Allianz Arena",conf:78,verdict:"Home Win"},{id:8,home:"Leverkusen",away:"RB Leipzig",date:d[4],time:"15:30",venue:"BayArena",conf:63,verdict:"Over 2.5"}],
+      "135":  [{id:9,home:"Inter Milan",away:"AC Milan",date:d[2],time:"20:45",venue:"San Siro",conf:76,verdict:"Home Win"},{id:10,home:"Juventus",away:"Napoli",date:d[5],time:"20:45",venue:"Juventus Stadium",conf:64,verdict:"Over 2.5"}],
+      "61":   [{id:11,home:"PSG",away:"Marseille",date:d[1],time:"21:00",venue:"Parc des Princes",conf:79,verdict:"Home Win"},{id:12,home:"Lyon",away:"Monaco",date:d[4],time:"19:00",venue:"Groupama Stadium",conf:61,verdict:"BTTS"}],
+      "2":    [{id:13,home:"Real Madrid",away:"Bayern Munich",date:d[2],time:"21:00",venue:"Santiago Bernabeu",conf:77,verdict:"Over 2.5"},{id:14,home:"Man City",away:"PSG",date:d[2],time:"21:00",venue:"Etihad Stadium",conf:70,verdict:"Home Win"}],
+      "253":  [{id:15,home:"LA Galaxy",away:"LAFC",date:d[1],time:"21:30",venue:"Dignity Health Park",conf:58,verdict:"BTTS"},{id:16,home:"Inter Miami",away:"Atlanta Utd",date:d[3],time:"20:30",venue:"Chase Stadium",conf:65,verdict:"Home Win"}],
+      "12":   [{id:17,home:"LA Lakers",away:"Golden State",date:d[0],time:"22:30",venue:"Crypto.com Arena",conf:69,verdict:"Away Win"},{id:18,home:"Boston",away:"Miami Heat",date:d[1],time:"00:30",venue:"TD Garden",conf:72,verdict:"Home Win"}],
+      "1mlb": [{id:21,home:"NY Yankees",away:"Boston",date:d[0],time:"23:05",venue:"Yankee Stadium",conf:62,verdict:"Home Win"},{id:22,home:"LA Dodgers",away:"SF Giants",date:d[1],time:"02:10",venue:"Dodger Stadium",conf:70,verdict:"Home -1.5"},{id:23,home:"Houston",away:"Texas Rangers",date:d[2],time:"02:10",venue:"Minute Maid Park",conf:65,verdict:"Over 8.5"}],
+      "57":   [{id:24,home:"Toronto",away:"Boston",date:d[0],time:"00:00",venue:"Scotiabank Arena",conf:67,verdict:"Home Win"},{id:25,home:"Colorado",away:"Vegas",date:d[2],time:"03:00",venue:"Ball Arena",conf:71,verdict:"Away Win"}],
+      "atp":  [{id:26,home:"Jannik Sinner",away:"Carlos Alcaraz",date:d[0],time:"14:00",venue:"Roland Garros",conf:72,verdict:"Away Win"},{id:27,home:"Novak Djokovic",away:"Daniil Medvedev",date:d[2],time:"12:00",venue:"Roland Garros",conf:68,verdict:"Home Win"}],
+      "wta":  [{id:28,home:"Iga Swiatek",away:"Aryna Sabalenka",date:d[0],time:"15:00",venue:"Roland Garros",conf:70,verdict:"Home Win"},{id:29,home:"Coco Gauff",away:"Elena Rybakina",date:d[2],time:"13:00",venue:"Roland Garros",conf:64,verdict:"Away Win"}],
+      "ufc":  [{id:30,home:"Islam Makhachev",away:"Charles Oliveira",date:d[4],time:"04:00",venue:"T-Mobile Arena",conf:71,verdict:"Home Win"},{id:31,home:"Alex Pereira",away:"Jamahal Hill",date:d[6],time:"04:00",venue:"Ball Arena",conf:74,verdict:"Home KO"}],
+      "boxing":[{id:32,home:"Canelo Alvarez",away:"Terence Crawford",date:d[5],time:"03:00",venue:"T-Mobile Arena",conf:67,verdict:"Home Win"},{id:33,home:"Tyson Fury",away:"Anthony Joshua",date:d[9],time:"22:00",venue:"Wembley Stadium",conf:64,verdict:"Away Win"}],
+      "pga":  [{id:34,home:"PGA Tour Event",away:"Check PGA.com",date:d[0],time:"13:00",venue:"TBD",conf:60,verdict:"Check Schedule"}],
+      "120":  [{id:35,home:"Real Madrid",away:"CSKA Moscow",date:d[0],time:"21:00",venue:"WiZink Center",conf:73,verdict:"Home Win"}],
     };
     return f[leagueId] || [{id:99,home:"No fixtures",away:"available",date:d[0],time:"TBD",venue:"TBD",conf:60,verdict:"Soon"}];
   };
 
   const fetchMatches = async (league) => {
-    setLoadingMatches(true); setMatches([]); setMatchError(null); setSelectedMatch(null); setAnalysisResult(null);
+    setLoadingMatches(true); setMatches([]); setMatchError(null); setOffSeason(null); setSelectedMatch(null); setAnalysisResult(null);
     try {
       const res = await fetch(`${API_BASE}/fixtures?leagueId=${league.apiId}&season=${league.season}&next=10`);
       const data = await res.json();
-      if (data.matches && data.matches.length > 0) { setMatches(data.matches); }
-      else { setMatches(getFrontendFallback(league.apiId)); }
+      if (data.offseason) {
+        setOffSeason(data.message);
+      } else if (data.matches && data.matches.length > 0) {
+        setMatches(data.matches);
+      } else {
+        setMatches(getFrontendFallback(league.apiId));
+      }
     } catch (err) { setMatches(getFrontendFallback(league.apiId)); }
     setLoadingMatches(false);
   };
@@ -336,14 +346,25 @@ export default function ReleyzApp() {
               <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700 }}>Fixtures</div>
               {loadingMatches && <span style={{ fontSize: 11, color: "#0057ff" }}><span className="spinner" />Loading...</span>}
             </div>
+
             {matchError && <div style={{ background: "#fff0f5", border: "1px solid #ffccd8", borderRadius: 12, padding: 14, color: "#cc3344", fontSize: 12, marginBottom: 12 }}>Error: {matchError}</div>}
-            {!loadingMatches && matches.length === 0 && !matchError && (
+
+            {offSeason && (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🏈</div>
+                <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 700, color: "#0a0f1e", marginBottom: 8 }}>Off Season</div>
+                <div style={{ fontSize: 13, color: "#889", lineHeight: 1.7 }}>{offSeason}</div>
+              </div>
+            )}
+
+            {!loadingMatches && matches.length === 0 && !matchError && !offSeason && (
               <div style={{ textAlign: "center", padding: "40px 20px", color: "#aab" }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>🏟</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#334", marginBottom: 6 }}>No fixtures yet</div>
                 <div style={{ fontSize: 12 }}>Open the menu to select a league</div>
               </div>
             )}
+
             {matches.map((m,i) => (
               <div key={i} className={`match-card ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i*0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -363,6 +384,7 @@ export default function ReleyzApp() {
               </div>
             ))}
           </div>
+
           {selectedMatch && (
             <div style={{ padding: "0 16px 16px" }} className="fade-up">
               <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Analysis Scope</div>
