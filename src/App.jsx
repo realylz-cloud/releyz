@@ -40,6 +40,30 @@ function getConfColor(c) {
   return "#88aacc";
 }
 
+function FormDot({ result }) {
+  const color = result === "W" ? "#00aa44" : result === "L" ? "#ff4444" : "#ffaa00";
+  return (
+    <div style={{ width: 18, height: 18, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "white", flexShrink: 0 }}>
+      {result}
+    </div>
+  );
+}
+
+function TeamLogo({ logo, name, size = 36 }) {
+  const [err, setErr] = useState(false);
+  if (err || !logo) {
+    return (
+      <div style={{ width: size, height: size, borderRadius: size / 4, background: "#eef3ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.4, flexShrink: 0 }}>
+        ⚽
+      </div>
+    );
+  }
+  return (
+    <img src={logo} alt={name} width={size} height={size} onError={() => setErr(true)}
+      style={{ objectFit: "contain", borderRadius: size / 4, flexShrink: 0 }} />
+  );
+}
+
 function Paywall({ onSubscribe, loading }) {
   return (
     <div style={{ minHeight: "100vh", background: "#f2f6ff", fontFamily: "'Plus Jakarta Sans', sans-serif", display: "flex", flexDirection: "column" }}>
@@ -144,40 +168,22 @@ export default function ReleyzApp() {
     try {
       const res = await fetch(`${API_BASE}/fixtures?leagueId=${league.apiId}`);
       const data = await res.json();
-      if (data.offseason) {
-        setOffSeason(data.message);
-      } else if (data.noFixtures) {
-        setNoFixturesMsg(data.message);
-      } else if (data.matches && data.matches.length > 0) {
-        setMatches(data.matches);
-      } else {
-        setNoFixturesMsg("No upcoming fixtures right now. Check back soon.");
-      }
-    } catch (err) {
-      setMatchError("Could not load fixtures. Please try again.");
-    }
+      if (data.offseason) { setOffSeason(data.message); }
+      else if (data.noFixtures) { setNoFixturesMsg(data.message); }
+      else if (data.matches && data.matches.length > 0) { setMatches(data.matches); }
+      else { setNoFixturesMsg("No upcoming fixtures right now. Check back soon."); }
+    } catch (err) { setMatchError("Could not load fixtures. Please try again."); }
     setLoadingMatches(false);
   };
 
-  const handleLeagueSelect = (sport, league) => {
-    setActiveSport(sport);
-    setActiveLeague(league);
-    setDrawerOpen(false);
-    setActivePage("matches");
-  };
-
-  const toggleAnalysis = (id) => {
-    setActiveAnalysis(p => p.includes(id) ? (p.length > 1 ? p.filter(x => x !== id) : p) : [...p, id]);
-  };
+  const handleLeagueSelect = (sport, league) => { setActiveSport(sport); setActiveLeague(league); setDrawerOpen(false); setActivePage("matches"); };
+  const toggleAnalysis = (id) => { setActiveAnalysis(p => p.includes(id) ? (p.length > 1 ? p.filter(x => x !== id) : p) : [...p, id]); };
 
   const runAnalysis = async () => {
     if (!selectedMatch) return;
-    setLoadingAnalysis(true);
-    setAnalysisResult(null);
-    setActivePage("analysis");
+    setLoadingAnalysis(true); setAnalysisResult(null); setActivePage("analysis");
     const msgs = ["Searching recent form...","Checking head-to-head history...","Scanning injury reports...","Analysing betting markets...","Building full context report..."];
-    let mi = 0;
-    setLoadingMsg(msgs[0]);
+    let mi = 0; setLoadingMsg(msgs[0]);
     const interval = setInterval(() => { mi = (mi + 1) % msgs.length; setLoadingMsg(msgs[mi]); }, 2200);
     try {
       const res = await fetch(`${API_BASE}/analyze`, {
@@ -194,19 +200,13 @@ export default function ReleyzApp() {
         const newBets = data.bettingAngles.map(angle => ({
           match: selectedMatch.home + " vs " + selectedMatch.away,
           league: activeLeague.name + " " + activeSport.icon,
-          pick: angle.pick,
-          reasoning: angle.reasoning,
-          conf: data.confidenceScore || 70,
-          value: angle.value || "Good",
-          risk: angle.risk || "Medium",
+          pick: angle.pick, reasoning: angle.reasoning,
+          conf: data.confidenceScore || 70, value: angle.value || "Good", risk: angle.risk || "Medium",
         }));
         setValueHistory(prev => [...newBets, ...prev].slice(0, 20));
       }
       setTimeout(() => analysisRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    } catch (err) {
-      clearInterval(interval);
-      setAnalysisResult({ error: err.message || "Analysis failed. Please try again." });
-    }
+    } catch (err) { clearInterval(interval); setAnalysisResult({ error: err.message || "Analysis failed." }); }
     setLoadingAnalysis(false);
   };
 
@@ -217,7 +217,7 @@ export default function ReleyzApp() {
   if (!isSubscribed) return <Paywall onSubscribe={handleSubscribe} loading={subscribeLoading} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f2f6ff", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#0a0f1e", position: "relative" }}>
+    <div style={{ minHeight: "100vh", background: "#f2f6ff", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#0a0f1e" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}::-webkit-scrollbar{width:0;height:0;}
@@ -257,7 +257,8 @@ export default function ReleyzApp() {
         .menu-line{width:18px;height:2px;background:#0057ff;border-radius:2px;}.menu-line.mid{width:13px;}
         .topbar-icon-btn{width:38px;height:38px;background:#f0f4ff;border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
         .match-card{background:white;border-radius:18px;padding:16px;margin-bottom:10px;border:2px solid transparent;cursor:pointer;transition:all .22s;box-shadow:0 2px 14px rgba(0,50,200,.06);}
-        .match-card:hover{box-shadow:0 6px 24px rgba(0,50,200,.11);transform:translateY(-1px);}.match-card.selected{border-color:#0057ff;box-shadow:0 6px 28px rgba(0,87,255,.18);}
+        .match-card:hover{box-shadow:0 6px 24px rgba(0,50,200,.11);transform:translateY(-1px);}
+        .match-card.selected{border-color:#0057ff;box-shadow:0 6px 28px rgba(0,87,255,.18);}
         .match-card.wc.selected{border-color:#FFB800;box-shadow:0 6px 28px rgba(255,184,0,.25);}
         .analysis-chip{background:white;border:1.5px solid #e0e8ff;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .18s;}
         .analysis-chip.active{background:#eef3ff;border-color:#0057ff;}
@@ -400,19 +401,54 @@ export default function ReleyzApp() {
               </div>
             )}
 
-            {matches.map((m,i) => (
-              <div key={i} className={`match-card ${isWC ? "wc" : ""} ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i*0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
+            {matches.map((m, i) => (
+              <div key={i} className={`match-card ${isWC ? "wc" : ""} ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i * 0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: isWC ? "#cc8800" : "#0057ff", background: isWC ? "#fff8e6" : "#eef3ff", padding: "3px 9px", borderRadius: 5 }}>
                     {isWC ? "🏆 FIFA WORLD CUP" : `${activeSport.icon} ${activeLeague.name}`}
                   </div>
                   <div style={{ fontSize: 10, color: "#889" }}>📅 {m.date} · {m.time}</div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <div style={{ flex: 1 }}><div style={{ fontSize: 15, fontWeight: 800 }}>{m.home}</div><div style={{ fontSize: 9, color: "#aab", marginTop: 2 }}>Home</div></div>
-                  <div style={{ padding: "0 10px", textAlign: "center" }}><div style={{ fontSize: 10, fontWeight: 800, color: "#ccd", letterSpacing: 1 }}>VS</div><div style={{ fontSize: 9, color: "#aab" }}>{m.time}</div></div>
-                  <div style={{ flex: 1, textAlign: "right" }}><div style={{ fontSize: 15, fontWeight: 800 }}>{m.away}</div><div style={{ fontSize: 9, color: "#aab", marginTop: 2 }}>Away</div></div>
+
+                {/* Teams with logos */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  {/* Home team */}
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                    <TeamLogo logo={m.homeLogo} name={m.home} size={36} />
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{m.home}</div>
+                      <div style={{ fontSize: 9, color: "#aab", marginTop: 1 }}>Home</div>
+                    </div>
+                  </div>
+                  {/* VS */}
+                  <div style={{ padding: "0 8px", textAlign: "center", flexShrink: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#ccd", letterSpacing: 1 }}>VS</div>
+                    <div style={{ fontSize: 9, color: "#aab" }}>{m.time}</div>
+                  </div>
+                  {/* Away team */}
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.2 }}>{m.away}</div>
+                      <div style={{ fontSize: 9, color: "#aab", marginTop: 1 }}>Away</div>
+                    </div>
+                    <TeamLogo logo={m.awayLogo} name={m.away} size={36} />
+                  </div>
                 </div>
+
+                {/* Recent form */}
+                {(m.homeForm || m.awayForm) && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "8px 0", borderTop: "1px solid #f0f2ff", borderBottom: "1px solid #f0f2ff" }}>
+                    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                      {(m.homeForm || []).slice(-5).map((r, j) => <FormDot key={j} result={r} />)}
+                    </div>
+                    <div style={{ fontSize: 9, color: "#aab", fontWeight: 600 }}>FORM</div>
+                    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                      {(m.awayForm || []).slice(-5).map((r, j) => <FormDot key={j} result={r} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Confidence bar */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: getConfColor(m.conf), minWidth: 28 }}>{m.conf}%</span>
                   <div style={{ flex: 1, height: 4, background: "#eef0f8", borderRadius: 2, overflow: "hidden" }}>
@@ -464,7 +500,12 @@ export default function ReleyzApp() {
                 <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
                 <div style={{ position: "relative" }}>
                   {isWC && <div style={{ fontSize: 9, color: "rgba(255,255,255,.8)", letterSpacing: 2, marginBottom: 4, fontWeight: 700 }}>🏆 FIFA WORLD CUP 2026</div>}
-                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color: "white", marginBottom: 4 }}>{selectedMatch.home} vs {selectedMatch.away}</div>
+                  {/* Logos in analysis header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    {selectedMatch.homeLogo && <TeamLogo logo={selectedMatch.homeLogo} name={selectedMatch.home} size={32} />}
+                    <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 800, color: "white" }}>{selectedMatch.home} vs {selectedMatch.away}</div>
+                    {selectedMatch.awayLogo && <TeamLogo logo={selectedMatch.awayLogo} name={selectedMatch.away} size={32} />}
+                  </div>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,.6)", marginBottom: 14 }}>{activeLeague.flag} {activeLeague.name} · {selectedMatch.date}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{ width: 64, height: 64, borderRadius: "50%", border: "3px solid rgba(255,255,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,.1)", flexShrink: 0 }}>
@@ -477,6 +518,7 @@ export default function ReleyzApp() {
                   </div>
                 </div>
               </div>
+
               <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto" }}>
                 {["overview","betting","redflags"].map((tab) => (
                   <button key={tab} className={`atab ${analysisTab === tab ? "active" : ""}`} onClick={() => setAnalysisTab(tab)}>
@@ -484,6 +526,7 @@ export default function ReleyzApp() {
                   </button>
                 ))}
               </div>
+
               {analysisTab === "overview" && (
                 <>
                   {analysisResult.sections?.map((s,i) => (
