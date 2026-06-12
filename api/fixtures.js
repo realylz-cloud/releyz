@@ -53,7 +53,7 @@ module.exports = async function handler(req, res) {
         const statusShort = event.status?.type?.short || "pre";
         if (statusShort === "post") continue;
 
-        let home, away, homeLogo, awayLogo, homeForm, awayForm, venue;
+        let home, away, homeLogo, awayLogo, homeForm, awayForm, venue, homeId, awayId;
 
         if (isTennisMMA) {
           const competitors = competition?.competitors || [];
@@ -63,8 +63,10 @@ module.exports = async function handler(req, res) {
           away = c1?.athlete?.displayName || c1?.team?.displayName;
           homeLogo = c0?.athlete?.headshot?.href || c0?.team?.logos?.[0]?.href || null;
           awayLogo = c1?.athlete?.headshot?.href || c1?.team?.logos?.[0]?.href || null;
-          homeForm = parseForm(c0?.records);
-          awayForm = parseForm(c1?.records);
+          homeForm = [];
+          awayForm = [];
+          homeId = null;
+          awayId = null;
           venue = competition?.venue?.fullName || event.name || "TBD";
         } else {
           const homeComp = competition?.competitors?.find(c => c.homeAway === "home");
@@ -73,16 +75,19 @@ module.exports = async function handler(req, res) {
           away = awayComp?.team?.displayName;
           homeLogo = homeComp?.team?.logos?.[0]?.href || homeComp?.team?.logo || null;
           awayLogo = awayComp?.team?.logos?.[0]?.href || awayComp?.team?.logo || null;
-          homeForm = parseForm(homeComp?.records);
-          awayForm = parseForm(awayComp?.records);
+          homeForm = [];
+          awayForm = [];
+          homeId = homeComp?.team?.id || null;
+          awayId = awayComp?.team?.id || null;
           venue = competition?.venue?.fullName || "TBD";
         }
 
         if (!home || !away) continue;
 
         allMatches.push({
-          id: event.id || Math.random(),
+          id: event.id,
           home, away,
+          homeId, awayId,
           homeLogo, awayLogo,
           homeForm, awayForm,
           date: new Date(event.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }),
@@ -122,11 +127,3 @@ module.exports = async function handler(req, res) {
 
   return res.status(200).json({ matches: [], noFixtures: true, message: emptyMessages[leagueId] || "No upcoming fixtures." });
 };
-
-function parseForm(records) {
-  if (!records || records.length === 0) return [];
-  const summary = records[0]?.summary || "";
-  // summary is like "12-8" — we can't get match by match W/L/D from this
-  // So return empty — the AI analysis covers form in detail
-  return [];
-}
