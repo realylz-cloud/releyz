@@ -185,3 +185,490 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
                             <div style={{ flex: 1, textAlign: "right", paddingRight: 12 }}>
                               <div style={{ fontSize: 12, fontWeight: 700, color: "#0a0f1e" }}>{event.player}</div>
                               {event.assist && <div style={{ fontSize: 10, color: "#889" }}>Assist: {event.assist}</div>}
+                              <div style={{ fontSize: 10, color: "#0057ff", fontWeight: 600 }}>{event.homeScore} - {event.awayScore}</div>
+                            </div>
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#0057ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(0,87,255,.3)" }}>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.1 }}>{event.minute}</span>
+                            </div>
+                            <div style={{ flex: 1, paddingLeft: 12 }} />
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ flex: 1, paddingRight: 12 }} />
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ff4444", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(255,68,68,.3)" }}>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.1 }}>{event.minute}</span>
+                            </div>
+                            <div style={{ flex: 1, paddingLeft: 12 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#0a0f1e" }}>{event.player}</div>
+                              {event.assist && <div style={{ fontSize: 10, color: "#889" }}>Assist: {event.assist}</div>}
+                              <div style={{ fontSize: 10, color: "#ff4444", fontWeight: 600 }}>{event.homeScore} - {event.awayScore}</div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0", color: "#889", fontSize: 12 }}>
+                  No goal timeline available for this match.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function H2HSection({ match, leagueSlug }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("h2h");
+  const [homeFilter, setHomeFilter] = useState("all");
+  const [awayFilter, setAwayFilter] = useState("all");
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/h2h?homeId=${match.homeId}&awayId=${match.awayId}&leagueSlug=${leagueSlug}`);
+        const d = await res.json();
+        setData(d);
+      } catch (e) { setData(null); }
+      setLoading(false);
+    }
+    if (match.homeId && match.awayId) load();
+    else { setData(null); setLoading(false); }
+  }, [match.homeId, match.awayId]);
+
+  if (!match.homeId || !match.awayId) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
+        <div style={{ fontSize: 13 }}>H2H data only available for soccer matches.</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
+        <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
+        <div style={{ fontSize: 13 }}>Loading head to head data...</div>
+      </div>
+    );
+  }
+
+  if (!data || data.error) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
+        <div style={{ fontSize: 13 }}>H2H data not available right now.</div>
+      </div>
+    );
+  }
+
+  const filterGames = (games, filter) => {
+    if (filter === "home") return games.filter(g => g.isHome);
+    if (filter === "away") return games.filter(g => !g.isHome);
+    return games;
+  };
+
+  const homeGames = filterGames(data.homeForm || [], homeFilter);
+  const awayGames = filterGames(data.awayForm || [], awayFilter);
+  const h2hGames = data.h2h || [];
+
+  function GameRow({ game, perspective }) {
+    const isWin = game.result === "W";
+    const isLoss = game.result === "L";
+    return (
+      <div onClick={() => setSelectedGame(game)} style={{ background: "white", borderRadius: 12, padding: "10px 12px", marginBottom: 8, boxShadow: "0 1px 8px rgba(0,50,200,.05)", cursor: "pointer", border: "1px solid #f0f2ff", transition: "all .15s" }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#0057ff"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "#f0f2ff"}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ResultBadge result={game.result} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+              <TeamLogo logo={game.homeLogo} name={game.homeTeam} size={16} />
+              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.homeTeam}</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#0057ff", margin: "0 2px" }}>{game.homeScore} - {game.awayScore}</span>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.awayTeam}</span>
+              <TeamLogo logo={game.awayLogo} name={game.awayTeam} size={16} />
+            </div>
+            <div style={{ fontSize: 10, color: "#889" }}>{game.date} · {game.isHome ? "Home" : "Away"} · {game.competition}</div>
+          </div>
+          <div style={{ fontSize: 11, color: "#aab" }}>›</div>
+        </div>
+      </div>
+    );
+  }
+
+  function StatsSummary({ games, teamName }) {
+    const w = games.filter(g => g.result === "W").length;
+    const d = games.filter(g => g.result === "D").length;
+    const l = games.filter(g => g.result === "L").length;
+    const total = games.length;
+    if (total === 0) return null;
+    return (
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {[["W", w, "#e8f8ee", "#00aa44"],["D", d, "#fff8e8", "#ff9900"],["L", l, "#fee8e8", "#ff4444"]].map(([label, count, bg, color]) => (
+          <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "8px 0", textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color }}>{count}</div>
+            <div style={{ fontSize: 9, color, fontWeight: 700 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {selectedGame && <MatchDetailModal game={selectedGame} leagueSlug={leagueSlug} onClose={() => setSelectedGame(null)} />}
+
+      {/* H2H summary stats */}
+      {activeTab === "h2h" && h2hGames.length > 0 && (
+        <div style={{ background: "white", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 12px rgba(0,50,200,.05)" }}>
+          <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 16, fontWeight: 700, marginBottom: 10, color: "#0a0f1e" }}>Head to Head Summary</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {(() => {
+              const hw = h2hGames.filter(g => g.homeTeam === match.home && parseInt(g.homeScore) > parseInt(g.awayScore)).length +
+                         h2hGames.filter(g => g.awayTeam === match.home && parseInt(g.awayScore) > parseInt(g.homeScore)).length;
+              const aw = h2hGames.filter(g => g.homeTeam === match.away && parseInt(g.homeScore) > parseInt(g.awayScore)).length +
+                         h2hGames.filter(g => g.awayTeam === match.away && parseInt(g.awayScore) > parseInt(g.homeScore)).length;
+              const draws = h2hGames.filter(g => g.homeScore === g.awayScore).length;
+              return [
+                [match.home, hw, "#eef3ff", "#0057ff"],
+                ["Draws", draws, "#fff8e8", "#ff9900"],
+                [match.away, aw, "#f5eeff", "#7722ff"],
+              ].map(([label, count, bg, color]) => (
+                <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "10px 4px", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color }}>{count}</div>
+                  <div style={{ fontSize: 9, color: "#889", fontWeight: 600, marginTop: 2 }}>{label}</div>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Tab switcher */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto" }}>
+        {[["h2h","⚔️ H2H"],["home","📊 " + match.home],["away","📊 " + match.away]].map(([tab, label]) => (
+          <button key={tab} onClick={() => setActiveTab(tab)} style={{ fontSize: 11, fontWeight: 700, padding: "8px 14px", borderRadius: 8, cursor: "pointer", border: "1.5px solid", borderColor: activeTab === tab ? "#0057ff" : "#e0e8ff", background: activeTab === tab ? "#eef3ff" : "white", color: activeTab === tab ? "#0057ff" : "#556", whiteSpace: "nowrap", transition: "all .18s" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* H2H Games */}
+      {activeTab === "h2h" && (
+        h2hGames.length > 0 ? (
+          h2hGames.map((g, i) => <GameRow key={i} game={g} />)
+        ) : (
+          <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent H2H meetings found.</div>
+        )
+      )}
+
+      {/* Home team form */}
+      {activeTab === "home" && (
+        <>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            {[["all","All"],["home","Home"],["away","Away"]].map(([f, label]) => (
+              <button key={f} onClick={() => setHomeFilter(f)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid", borderColor: homeFilter === f ? "#0057ff" : "#e0e8ff", background: homeFilter === f ? "#eef3ff" : "white", color: homeFilter === f ? "#0057ff" : "#556" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <StatsSummary games={homeGames} teamName={match.home} />
+          {homeGames.length > 0 ? (
+            homeGames.map((g, i) => <GameRow key={i} game={g} />)
+          ) : (
+            <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent results found.</div>
+          )}
+        </>
+      )}
+
+      {/* Away team form */}
+      {activeTab === "away" && (
+        <>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            {[["all","All"],["home","Home"],["away","Away"]].map(([f, label]) => (
+              <button key={f} onClick={() => setAwayFilter(f)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid", borderColor: awayFilter === f ? "#0057ff" : "#e0e8ff", background: awayFilter === f ? "#eef3ff" : "white", color: awayFilter === f ? "#0057ff" : "#556" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <StatsSummary games={awayGames} teamName={match.away} />
+          {awayGames.length > 0 ? (
+            awayGames.map((g, i) => <GameRow key={i} game={g} />)
+          ) : (
+            <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent results found.</div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
+
+export default function ReleyzApp() {
+  const [isSubscribed, setIsSubscribed]         = useState(true);
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [userToken, setUserToken]               = useState("test");
+  const [drawerOpen, setDrawerOpen]             = useState(false);
+  const [activeSport, setActiveSport]           = useState(SPORTS[0]);
+  const [expandedSport, setExpandedSport]       = useState("soccer");
+  const [activeLeague, setActiveLeague]         = useState(SPORTS[0].leagues[0]);
+  const [matches, setMatches]                   = useState([]);
+  const [loadingMatches, setLoadingMatches]     = useState(false);
+  const [matchError, setMatchError]             = useState(null);
+  const [offSeason, setOffSeason]               = useState(null);
+  const [noFixturesMsg, setNoFixturesMsg]       = useState(null);
+  const [selectedMatch, setSelectedMatch]       = useState(null);
+  const [activeAnalysis, setActiveAnalysis]     = useState(["full"]);
+  const [activePage, setActivePage]             = useState("matches");
+  const [loadingAnalysis, setLoadingAnalysis]   = useState(false);
+  const [analysisResult, setAnalysisResult]     = useState(null);
+  const [analysisTab, setAnalysisTab]           = useState("overview");
+  const [loadingMsg, setLoadingMsg]             = useState("");
+  const [valueHistory, setValueHistory]         = useState([]);
+  const analysisRef = useRef(null);
+
+  useEffect(() => { if (activeLeague) fetchMatches(activeLeague); }, [activeLeague]);
+
+  const handleSubscribe = async () => {
+    setSubscribeLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/subscribe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: `user_${Date.now()}` }) });
+      const data = await res.json();
+      if (data.url) { window.location.href = data.url; }
+      else throw new Error(data.error || "Failed");
+    } catch (err) { alert("Could not start checkout."); }
+    setSubscribeLoading(false);
+  };
+
+  const fetchMatches = async (league) => {
+    setLoadingMatches(true); setMatches([]); setMatchError(null); setOffSeason(null); setNoFixturesMsg(null); setSelectedMatch(null); setAnalysisResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/fixtures?leagueId=${league.apiId}`);
+      const data = await res.json();
+      if (data.offseason) setOffSeason(data.message);
+      else if (data.noFixtures) setNoFixturesMsg(data.message);
+      else if (data.matches?.length > 0) setMatches(data.matches);
+      else setNoFixturesMsg("No upcoming fixtures right now. Check back soon.");
+    } catch (err) { setMatchError("Could not load fixtures. Please try again."); }
+    setLoadingMatches(false);
+  };
+
+  const handleLeagueSelect = (sport, league) => { setActiveSport(sport); setActiveLeague(league); setDrawerOpen(false); setActivePage("matches"); };
+  const toggleAnalysis = (id) => { setActiveAnalysis(p => p.includes(id) ? (p.length > 1 ? p.filter(x => x !== id) : p) : [...p, id]); };
+
+  const runAnalysis = async () => {
+    if (!selectedMatch) return;
+    setLoadingAnalysis(true); setAnalysisResult(null); setActivePage("analysis");
+    const msgs = ["Searching recent form...","Checking head-to-head history...","Scanning injury reports...","Analysing betting markets...","Building full context report..."];
+    let mi = 0; setLoadingMsg(msgs[0]);
+    const interval = setInterval(() => { mi = (mi + 1) % msgs.length; setLoadingMsg(msgs[mi]); }, 2200);
+    try {
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${userToken}` },
+        body: JSON.stringify({ match: selectedMatch, league: activeLeague, sport: activeSport, analysisTypes: activeAnalysis }),
+      });
+      const data = await res.json();
+      clearInterval(interval);
+      if (!res.ok) throw new Error(data.error || "Analysis failed");
+      setAnalysisResult(data);
+      setAnalysisTab("overview");
+      if (data.bettingAngles) {
+        const newBets = data.bettingAngles.map(angle => ({
+          match: selectedMatch.home + " vs " + selectedMatch.away,
+          league: activeLeague.name + " " + activeSport.icon,
+          pick: angle.pick, reasoning: angle.reasoning,
+          conf: data.confidenceScore || 70, value: angle.value || "Good", risk: angle.risk || "Medium",
+        }));
+        setValueHistory(prev => [...newBets, ...prev].slice(0, 20));
+      }
+      setTimeout(() => analysisRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (err) { clearInterval(interval); setAnalysisResult({ error: err.message || "Analysis failed." }); }
+    setLoadingAnalysis(false);
+  };
+
+  const rc = r => r === "Low" ? "#00aa44" : r === "Medium" ? "#ff9900" : "#ff4444";
+  const vc = v => v === "Excellent" ? "#0057ff" : v === "Good" ? "#0099cc" : "#889";
+  const isWC = activeLeague.id === "wc2026";
+  const isSoccer = activeSport.id === "soccer";
+
+  if (!isSubscribed) return <Paywall onSubscribe={handleSubscribe} loading={subscribeLoading} />;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#f2f6ff", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#0a0f1e" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}::-webkit-scrollbar{width:0;height:0;}
+        .drawer-overlay{position:fixed;inset:0;background:rgba(10,15,30,.45);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(2px);}
+        .drawer-overlay.open{opacity:1;pointer-events:all;}
+        .drawer{position:fixed;top:0;left:0;bottom:0;width:280px;background:white;z-index:101;transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 40px rgba(0,50,200,.12);display:flex;flex-direction:column;overflow:hidden;}
+        .drawer.open{transform:translateX(0);}
+        .drawer-header{background:linear-gradient(135deg,#0047dd 0%,#0099ff 100%);padding:48px 20px 20px;flex-shrink:0;}
+        .drawer-logo{font-family:'Barlow Condensed';font-size:32px;font-weight:800;color:white;letter-spacing:1px;margin-bottom:4px;}
+        .drawer-tagline{font-size:11px;color:rgba(255,255,255,.6);}
+        .drawer-user{display:flex;align-items:center;gap:10px;margin-top:16px;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;}
+        .drawer-avatar{width:32px;height:32px;background:rgba(255,255,255,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+        .drawer-username{font-size:13px;font-weight:700;color:white;}
+        .drawer-plan{font-size:10px;color:rgba(255,255,255,.6);}
+        .drawer-scroll{flex:1;overflow-y:auto;padding:12px 0 80px;}
+        .drawer-section-label{font-size:9px;font-weight:700;letter-spacing:2px;color:#aab;padding:12px 20px 6px;text-transform:uppercase;}
+        .drawer-sport-row{display:flex;align-items:center;padding:10px 20px;cursor:pointer;transition:background .15s;}
+        .drawer-sport-row:hover{background:#f5f8ff;}.drawer-sport-row.active{background:#eef3ff;}
+        .drawer-sport-icon{font-size:20px;margin-right:12px;width:28px;text-align:center;}
+        .drawer-sport-name{font-size:14px;font-weight:600;flex:1;color:#1a2040;}
+        .drawer-sport-count{font-size:10px;font-weight:700;background:#eef3ff;color:#0057ff;padding:2px 8px;border-radius:10px;margin-right:8px;}
+        .drawer-sport-chevron{font-size:10px;color:#aab;transition:transform .2s;}.drawer-sport-chevron.expanded{transform:rotate(90deg);}
+        .drawer-sport-row.active .drawer-sport-name{color:#0057ff;}
+        .drawer-leagues{overflow:hidden;transition:max-height .3s ease;background:#fafbff;}
+        .drawer-league-row{display:flex;align-items:center;padding:9px 20px 9px 52px;cursor:pointer;transition:background .15s;}
+        .drawer-league-row:hover{background:#f0f4ff;}.drawer-league-row.active{background:#eef3ff;}
+        .drawer-league-flag{font-size:14px;margin-right:8px;}
+        .drawer-league-name{font-size:13px;font-weight:500;color:#445;flex:1;}
+        .drawer-league-row.active .drawer-league-name{color:#0057ff;font-weight:700;}
+        .drawer-active-dot{width:6px;height:6px;border-radius:50%;background:#0057ff;}
+        .drawer-footer{position:absolute;bottom:0;left:0;right:0;padding:12px 20px;background:white;border-top:1px solid #f0f2ff;display:flex;gap:8px;}
+        .drawer-footer-btn{flex:1;padding:9px;background:#f0f4ff;border:none;border-radius:8px;font-family:'Plus Jakarta Sans';font-size:12px;font-weight:600;color:#0057ff;cursor:pointer;}
+        .topbar{background:white;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eaedff;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,50,200,.06);}
+        .topbar-logo{font-family:'Barlow Condensed';font-size:26px;font-weight:800;color:#0a0f1e;letter-spacing:.5px;}
+        .topbar-logo span{color:#0057ff;}
+        .menu-btn{width:38px;height:38px;background:#f0f4ff;border:none;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:10px 9px;}
+        .menu-line{width:18px;height:2px;background:#0057ff;border-radius:2px;}.menu-line.mid{width:13px;}
+        .topbar-icon-btn{width:38px;height:38px;background:#f0f4ff;border:none;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
+        .match-card{background:white;border-radius:18px;padding:16px;margin-bottom:10px;border:2px solid transparent;cursor:pointer;transition:all .22s;box-shadow:0 2px 14px rgba(0,50,200,.06);}
+        .match-card:hover{box-shadow:0 6px 24px rgba(0,50,200,.11);transform:translateY(-1px);}
+        .match-card.selected{border-color:#0057ff;box-shadow:0 6px 28px rgba(0,87,255,.18);}
+        .match-card.wc.selected{border-color:#FFB800;}
+        .analysis-chip{background:white;border:1.5px solid #e0e8ff;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .18s;}
+        .analysis-chip.active{background:#eef3ff;border-color:#0057ff;}
+        .run-btn{width:100%;padding:17px;background:linear-gradient(135deg,#0047dd,#0099ff);color:white;border:none;border-radius:14px;font-family:'Barlow Condensed';font-size:20px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:0 8px 28px rgba(0,87,255,.28);transition:all .2s;}
+        .run-btn:hover:not(:disabled){transform:translateY(-2px);}
+        .run-btn:disabled{background:linear-gradient(135deg,#c0ccee,#a0b8dd);cursor:not-allowed;box-shadow:none;}
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #eaedff;display:flex;padding:10px 0 22px;box-shadow:0 -4px 24px rgba(0,50,200,.08);z-index:50;}
+        .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;}
+        .nav-tab-icon{font-size:22px;}.nav-tab-label{font-size:9px;font-weight:700;color:#bbc;letter-spacing:.5px;text-transform:uppercase;}
+        .nav-tab.active .nav-tab-label{color:#0057ff;}.nav-tab-line{width:20px;height:2px;border-radius:2px;background:transparent;}
+        .nav-tab.active .nav-tab-line{background:#0057ff;}
+        .section-card{background:white;border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,50,200,.05);}
+        .atab{font-size:12px;font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;border:1.5px solid #e0e8ff;background:white;color:#556;white-space:nowrap;transition:all .18s;}
+        .atab.active{background:#eef3ff;border-color:#0057ff;color:#0057ff;}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.pulse{animation:pulse 1.4s ease-in-out infinite;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.fade-up{animation:fadeUp .35s ease forwards;}
+        @keyframes spin{to{transform:rotate(360deg)}}.spinner{display:inline-block;width:12px;height:12px;border:2px solid #e0e8ff;border-top-color:#0057ff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+      `}</style>
+
+      <div className={`drawer-overlay ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
+      <div className={`drawer ${drawerOpen ? "open" : ""}`}>
+        <div className="drawer-header">
+          <div className="drawer-logo">RELEYZ</div>
+          <div className="drawer-tagline">AI Sports Betting Intelligence</div>
+          <div className="drawer-user">
+            <div className="drawer-avatar">⚡</div>
+            <div><div className="drawer-username">Pro Member</div><div className="drawer-plan">Unlimited access · All sports</div></div>
+          </div>
+        </div>
+        <div className="drawer-scroll">
+          <div className="drawer-section-label">Featured</div>
+          <div className={`drawer-league-row ${isWC ? "active" : ""}`} style={{ paddingLeft: 20, background: isWC ? "#fff8e6" : "#fffbf0", borderLeft: isWC ? "3px solid #FFB800" : "none" }} onClick={() => handleLeagueSelect(SPORTS[0], SPORTS[0].leagues[0])}>
+            <div className="drawer-league-flag">🏆</div>
+            <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#cc8800" }}>FIFA World Cup 2026</div><div style={{ fontSize: 10, color: "#aaa" }}>USA · Canada · Mexico</div></div>
+            {isWC && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#FFB800" }} />}
+          </div>
+          <div className="drawer-section-label">All Sports</div>
+          {SPORTS.map((sport) => (
+            <div key={sport.id}>
+              <div className={`drawer-sport-row ${activeSport.id === sport.id ? "active" : ""}`} onClick={() => setExpandedSport(expandedSport === sport.id ? null : sport.id)}>
+                <div className="drawer-sport-icon">{sport.icon}</div>
+                <div className="drawer-sport-name">{sport.label}</div>
+                <div className="drawer-sport-count">{sport.count}</div>
+                <div className={`drawer-sport-chevron ${expandedSport === sport.id ? "expanded" : ""}`}>▶</div>
+              </div>
+              <div className="drawer-leagues" style={{ maxHeight: expandedSport === sport.id ? `${sport.leagues.length * 42}px` : "0" }}>
+                {sport.leagues.filter(l => l.id !== "wc2026").map((league) => (
+                  <div key={league.id} className={`drawer-league-row ${activeLeague.id === league.id ? "active" : ""}`} onClick={() => handleLeagueSelect(sport, league)}>
+                    <div className="drawer-league-flag">{league.flag}</div>
+                    <div className="drawer-league-name">{league.name}</div>
+                    {activeLeague.id === league.id && <div className="drawer-active-dot" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="drawer-section-label" style={{ marginTop: 8 }}>Account</div>
+          {["Settings","Help and Support","Terms and Privacy"].map((item,i) => (
+            <div key={i} className="drawer-sport-row" onClick={() => setDrawerOpen(false)}><div className="drawer-sport-name">{item}</div></div>
+          ))}
+        </div>
+        <div className="drawer-footer">
+          <button className="drawer-footer-btn" onClick={() => setDrawerOpen(false)}>Close</button>
+          <button className="drawer-footer-btn" onClick={() => { localStorage.removeItem("releyz_token"); setIsSubscribed(false); setDrawerOpen(false); }}>Sign Out</button>
+        </div>
+      </div>
+
+      <div className="topbar">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button className="menu-btn" onClick={() => setDrawerOpen(true)}>
+            <div className="menu-line" /><div className="menu-line mid" /><div className="menu-line" />
+          </button>
+          <div className="topbar-logo">Rel<span>eyz</span></div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="topbar-icon-btn">🔔</button>
+          <button className="topbar-icon-btn">🔍</button>
+        </div>
+      </div>
+
+      {activePage === "matches" && (
+        <div style={{ paddingBottom: 90 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", background: "white", borderBottom: "1px solid #eaedff" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: isWC ? "#cc8800" : "#0057ff" }}>{isWC ? "🏆 World Cup 2026" : `${activeSport.icon} ${activeSport.label}`}</span>
+            {!isWC && <><span style={{ fontSize: 10, color: "#ccd" }}>›</span><span style={{ fontSize: 12, fontWeight: 600, color: "#445" }}>{activeLeague.flag} {activeLeague.name}</span></>}
+            <span style={{ marginLeft: "auto", fontSize: 11, color: isWC ? "#cc8800" : "#0057ff", fontWeight: 700, background: isWC ? "#fff8e6" : "#eef3ff", padding: "2px 10px", borderRadius: 10 }}>{matches.length} matches</span>
+          </div>
+          <div style={{ background: isWC ? "linear-gradient(135deg,#cc8800,#FFB800,#FFD700)" : "linear-gradient(135deg,#0047dd 0%,#0088ee 60%,#00aaff 100%)", padding: "20px 16px", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px)", backgroundSize: "24px 24px" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2.5, color: "rgba(255,255,255,.7)", marginBottom: 8 }}>{isWC ? "FIFA WORLD CUP 2026 · USA · CANADA · MEXICO" : "AI MATCH INTELLIGENCE"}</div>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 30, fontWeight: 800, color: "white", lineHeight: 1.1, marginBottom: 16 }}>{isWC ? "World Cup 2026" : activeLeague.name}<br />{isWC ? "104 Matches · 48 Teams" : "Upcoming Fixtures"}</div>
+              <div style={{ display: "flex", gap: 10 }}>
+                {(isWC ? [["104","Matches"],["48","Teams"],["AI","Analysis"]] : [["Live","Data"],["AI","Analysis"],[`${matches.length}`,"Matches"]]).map(([v,l],i) => (
+                  <div key={i} style={{ background: "rgba(255,255,255,.13)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 10, padding: "10px 14px" }}>
+                    <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color: "white" }}>{v}</div>
+                    <div style={{ fontSize: 9, color: "rgba(255,255,255,.6)", marginTop: 1 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ padding: "16px 16px 8px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700 }}>Fixtures</div>
+              {loadingMatches && <span style={{ fontSize: 11, color: "#0057ff" }}><span className="spinner" />Loading...</span>}
+            </div>
+            {matchError && <div style={{ background: "#fff0f5", border: "1px solid #ffccd8", borderRadius: 12, padding: 14, color: "#cc3344", fontSize: 12, marginBottom: 12 }}>{matchError}</div>}
+            {offSeason && <div style={{ textAlign: "center", padding: "40px 20px" }}><div style={{ fontSize: 40, marginBottom: 12 }}>🏈</div><div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Off Season</div><div style={{ fontSize: 13, color: "#889" }}>{offSeason}</div></div>}
+            {noFixturesMsg && !offSeason && <div style={{ textAlign: "center", padding: "40px 20px" }}><div style={{ fontSize: 40, marginBottom: 12 }}>🏟</div><div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>No Upcoming Fixtures</div><div style={{ fontSize: 13, color: "#889" }}>{noFixturesMsg}</div></div>}
+            {!loadingMatches && matches.length === 0 && !matchError && !offSeason && !noFixturesMsg && (
+              <div style={{ textAlign: "center", padding: "40px 20px", color: "#aab" }}><div style={{ fontSize: 32, marginBottom: 10 }}>🏟</div><div style={{ fontSize: 14, fontWeight: 700, color: "#334", marginBottom: 6 }}>No fixtures yet</div><div style={{ fontSize: 12 }}>Open the menu to select a league</div></div>
+            )}
+            {matches.map((m,i) => (
+              <div key={i} className={`match-card ${isWC ? "wc" : ""} ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i*0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: isWC ? "#cc8800" : "#0057ff", background: isWC ? "#fff8e6" : "#eef3ff", padding: "3px 9px", borderRadius: 5 }}>
+                    {isWC ? "🏆 FIFA WORLD CUP" : `${activeSport.icon} ${activeLeague.name}`}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#889" }}>📅 {m.date} · {m.time}</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                    <TeamLogo logo={m.homeLogo} name={m.home} size={36} />
+                    <div><div style={{ fontSize: 14, fontWeight: 800 }}>{m.home}</div><div style={{ fontSize: 9, color: "#aab" }}>Home</div></div>
