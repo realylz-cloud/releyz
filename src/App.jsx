@@ -672,3 +672,212 @@ export default function ReleyzApp() {
                   <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
                     <TeamLogo logo={m.homeLogo} name={m.home} size={36} />
                     <div><div style={{ fontSize: 14, fontWeight: 800 }}>{m.home}</div><div style={{ fontSize: 9, color: "#aab" }}>Home</div></div>
+                  </div>
+                  <div style={{ padding: "0 8px", textAlign: "center", flexShrink: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#ccd", letterSpacing: 1 }}>VS</div>
+                    <div style={{ fontSize: 9, color: "#aab" }}>{m.time}</div>
+                  </div>
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+                    <div style={{ textAlign: "right" }}><div style={{ fontSize: 14, fontWeight: 800 }}>{m.away}</div><div style={{ fontSize: 9, color: "#aab" }}>Away</div></div>
+                    <TeamLogo logo={m.awayLogo} name={m.away} size={36} />
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#0057ff", minWidth: 28 }}>{m.conf}%</span>
+                  <div style={{ flex: 1, height: 4, background: "#eef0f8", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ width: `${m.conf}%`, height: "100%", background: isWC ? "linear-gradient(90deg,#cc8800,#FFD700)" : "linear-gradient(90deg,#0047dd,#00aaff)", borderRadius: 2 }} />
+                  </div>
+                  <div style={{ fontSize: 9, fontWeight: 700, background: isWC ? "#fff8e6" : "#f0f6ff", color: isWC ? "#cc8800" : "#0057ff", padding: "3px 9px", borderRadius: 5 }}>{m.verdict}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {selectedMatch && (
+            <div style={{ padding: "0 16px 16px" }} className="fade-up">
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Analysis Scope</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
+                {ANALYSIS_TYPES.map((a) => (
+                  <div key={a.id} className={`analysis-chip ${activeAnalysis.includes(a.id) ? "active" : ""}`} onClick={() => toggleAnalysis(a.id)}>
+                    <div style={{ fontSize: 18, marginBottom: 4 }}>{a.icon}</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: activeAnalysis.includes(a.id) ? "#0057ff" : "#445" }}>{a.label}</div>
+                  </div>
+                ))}
+              </div>
+              <button className="run-btn" disabled={loadingAnalysis} onClick={runAnalysis}>
+                {loadingAnalysis ? <span className="pulse">ANALYZING...</span> : "RUN FULL ANALYSIS"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activePage === "analysis" && (
+        <div style={{ padding: "16px 16px 100px" }} className="fade-up">
+          {loadingAnalysis && (
+            <div style={{ textAlign: "center", padding: "60px 20px" }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>⚡</div>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Analyzing Match...</div>
+              <div className="pulse" style={{ fontSize: 13, color: "#889" }}>{loadingMsg}</div>
+            </div>
+          )}
+          {analysisResult?.error && (
+            <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 14, padding: 16, color: "#cc4444", fontSize: 13, marginBottom: 16 }}>
+              {analysisResult.error}
+              <div style={{ marginTop: 12 }}><button onClick={() => setActivePage("matches")} style={{ background: "#0057ff", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Back to Matches</button></div>
+            </div>
+          )}
+          {analysisResult && !analysisResult.error && selectedMatch && (
+            <>
+              <div ref={analysisRef} style={{ background: isWC ? "linear-gradient(135deg,#cc8800,#FFB800)" : "linear-gradient(135deg,#0047dd,#0099ff)", borderRadius: 20, padding: 20, marginBottom: 16, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
+                <div style={{ position: "relative" }}>
+                  {isWC && <div style={{ fontSize: 9, color: "rgba(255,255,255,.8)", letterSpacing: 2, marginBottom: 4, fontWeight: 700 }}>🏆 FIFA WORLD CUP 2026</div>}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                    {selectedMatch.homeLogo && <TeamLogo logo={selectedMatch.homeLogo} name={selectedMatch.home} size={28} />}
+                    <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 800, color: "white" }}>{selectedMatch.home} vs {selectedMatch.away}</div>
+                    {selectedMatch.awayLogo && <TeamLogo logo={selectedMatch.awayLogo} name={selectedMatch.away} size={28} />}
+                  </div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,.6)", marginBottom: 14 }}>{activeLeague.flag} {activeLeague.name} · {selectedMatch.date}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", border: "3px solid rgba(255,255,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,.1)", flexShrink: 0 }}>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color: "white" }}>{analysisResult.confidenceScore}</div>
+                        <div style={{ fontSize: 7, color: "rgba(255,255,255,.5)", letterSpacing: 1 }}>CONF%</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.9)", lineHeight: 1.6, flex: 1 }}>{analysisResult.verdict}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabs — Overview and H2H only */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto" }}>
+                {[["overview","📊 Overview"],["h2h","⚔️ Head to Head"]].map(([tab, label]) => (
+                  <button key={tab} className={`atab ${analysisTab === tab ? "active" : ""}`} onClick={() => setAnalysisTab(tab)}>{label}</button>
+                ))}
+              </div>
+
+              {analysisTab === "overview" && (
+                <>
+                  {analysisResult.sections?.map((s,i) => (
+                    <div key={i} className="section-card">
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                        <span style={{ fontSize: 18 }}>{s.icon}</span>
+                        <span style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700 }}>{s.title}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: "#556", lineHeight: 1.8, marginBottom: s.stats?.length ? 12 : 0 }}>{s.content}</p>
+                      {s.stats?.length > 0 && (
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: s.keyPoints?.length ? 12 : 0 }}>
+                          {s.stats.map((st,j) => (
+                            <div key={j} style={{ background: "#f5f7ff", border: "1px solid #e8eeff", borderRadius: 8, padding: "8px 10px", display: "flex", justifyContent: "space-between" }}>
+                              <span style={{ fontSize: 10, color: "#889" }}>{st.label}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700 }}>{st.value} {st.trend === "up" ? "↑" : st.trend === "down" ? "↓" : "→"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {s.keyPoints?.map((p,j) => (
+                        <div key={j} style={{ display: "flex", gap: 8, marginBottom: 5 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#0057ff", marginTop: 5, flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: "#445", lineHeight: 1.6 }}>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  {analysisResult.summary && (
+                    <div className="section-card">
+                      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}><span style={{ fontSize: 18 }}>📝</span><span style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700 }}>Summary</span></div>
+                      <p style={{ fontSize: 12, color: "#556", lineHeight: 1.8 }}>{analysisResult.summary}</p>
+                    </div>
+                  )}
+                  <div style={{ padding: "12px 14px", background: "#f5f7ff", borderRadius: 10, fontSize: 10, color: "#aab", lineHeight: 1.7, textAlign: "center" }}>
+                    Releyz provides analytical context only. Not financial advice. Gamble responsibly.
+                  </div>
+                </>
+              )}
+
+              {analysisTab === "h2h" && (
+                <H2HSection match={selectedMatch} leagueSlug={activeLeague.slug || "eng.1"} />
+              )}
+            </>
+          )}
+          {!loadingAnalysis && !analysisResult && (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "#aab" }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 700, color: "#0a0f1e", marginBottom: 8 }}>No Analysis Yet</div>
+              <div style={{ fontSize: 13, marginBottom: 20 }}>Select a match and run analysis first.</div>
+              <button onClick={() => setActivePage("matches")} style={{ background: "#0057ff", color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go to Matches</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activePage === "value" && (
+        <div style={{ padding: "16px 16px 100px" }} className="fade-up">
+          <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Today's Value Bets</div>
+          <div style={{ fontSize: 12, color: "#889", marginBottom: 16 }}>Betting angles from your recent analyses</div>
+          {valueHistory.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 20px" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>💰</div>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 700, color: "#0a0f1e", marginBottom: 8 }}>No Value Bets Yet</div>
+              <div style={{ fontSize: 13, color: "#889", marginBottom: 24, lineHeight: 1.7 }}>Run an analysis on any match and the AI betting angles will automatically appear here.</div>
+              <button onClick={() => setActivePage("matches")} style={{ background: "#0057ff", color: "white", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Browse Matches</button>
+            </div>
+          ) : valueHistory.map((item,i) => (
+            <div key={i} style={{ background: "white", borderRadius: 18, padding: 16, marginBottom: 12, boxShadow: "0 2px 14px rgba(0,50,200,.06)", border: "2px solid #eef3ff" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "linear-gradient(135deg,#0047dd,#0099ff)", color: "white", fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 5, letterSpacing: 1, marginBottom: 10 }}>{item.value.toUpperCase()} VALUE</div>
+              <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{item.match}</div>
+              <div style={{ fontSize: 11, color: "#889", marginBottom: 8 }}>{item.league}</div>
+              <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700, color: "#0057ff", marginBottom: 10 }}>{item.pick}</div>
+              <div style={{ fontSize: 12, color: "#556", marginBottom: 10, lineHeight: 1.6 }}>{item.reasoning}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 80, height: 4, background: "#eef0f8", borderRadius: 2, overflow: "hidden" }}><div style={{ width: `${item.conf}%`, height: "100%", background: "linear-gradient(90deg,#0047dd,#00aaff)", borderRadius: 2 }} /></div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0057ff" }}>{item.conf}%</span>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 5, background: item.risk === "Low" ? "#e8f8ee" : item.risk === "Medium" ? "#fff8e8" : "#fee8e8", color: rc(item.risk) }}>{item.risk} Risk</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activePage === "profile" && (
+        <div style={{ padding: "16px 16px 100px" }} className="fade-up">
+          <div style={{ background: "linear-gradient(135deg,#0047dd,#0099ff)", borderRadius: 20, padding: 22, marginBottom: 16, textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, background: "rgba(255,255,255,.2)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 12px" }}>⚡</div>
+            <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color: "white" }}>Pro Member</div>
+            <div style={{ display: "inline-block", background: "rgba(255,255,255,.2)", border: "1px solid rgba(255,255,255,.3)", borderRadius: 20, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: "white", marginTop: 6 }}>$9 / month - Unlimited</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
+            {[["∞","Analyses"],["12","Sports"],["500+","Leagues"]].map(([v,l],i) => (
+              <div key={i} style={{ background: "white", borderRadius: 14, padding: "14px 10px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,50,200,.06)" }}>
+                <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color: "#0057ff" }}>{v}</div>
+                <div style={{ fontSize: 9, color: "#aab", marginTop: 2, fontWeight: 600 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Settings</div>
+          {[["Language","English"],["Notifications","On"],["Default Analysis","Full Context"],["Favourite Sport","Soccer"],["Privacy Policy","View"],["Help and Support","Contact"]].map(([label,value],i) => (
+            <div key={i} style={{ background: "white", borderRadius: 12, padding: "14px 16px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 1px 8px rgba(0,50,200,.04)", cursor: "pointer" }}>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
+              <span style={{ fontSize: 12, color: "#0057ff", fontWeight: 600 }}>{value} ›</span>
+            </div>
+          ))}
+          <button onClick={() => { localStorage.removeItem("releyz_token"); setIsSubscribed(false); }} style={{ width: "100%", marginTop: 8, padding: "14px", background: "white", border: "2px solid #ffcccc", borderRadius: 12, fontFamily: "'Plus Jakarta Sans'", fontSize: 13, fontWeight: 700, color: "#cc3344", cursor: "pointer" }}>Sign Out</button>
+        </div>
+      )}
+
+      <div className="bottom-nav">
+        {[{id:"matches",icon:"⚽",label:"Matches"},{id:"analysis",icon:"📊",label:"Analysis"},{id:"value",icon:"💰",label:"Value"},{id:"profile",icon:"👤",label:"Profile"}].map((tab) => (
+          <div key={tab.id} className={`nav-tab ${activePage === tab.id ? "active" : ""}`} onClick={() => setActivePage(tab.id)}>
+            <div className="nav-tab-line" />
+            <div className="nav-tab-icon">{tab.icon}</div>
+            <div className="nav-tab-label">{tab.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
