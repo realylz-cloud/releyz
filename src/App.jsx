@@ -17,20 +17,20 @@ const SPORTS = [
     ]
   },
   { id: "basketball", label: "Basketball", icon: "🏀", count: 8, leagues: [{ id: "12", apiId: "12", name: "NBA", flag: "🇺🇸", season: 2025 },{ id: "120", apiId: "120", name: "EuroLeague", flag: "🇪🇺", season: 2025 }] },
-  { id: "football", label: "Am. Football", icon: "🏈", count: 6, leagues: [{ id: "1nfl", apiId: "1nfl", name: "NFL", flag: "🇺🇸", season: 2025 },{ id: "2nfl", apiId: "2nfl", name: "NCAA Football", flag: "🇺🇸", season: 2025 }] },
-  { id: "baseball", label: "Baseball", icon: "⚾", count: 12, leagues: [{ id: "1mlb", apiId: "1mlb", name: "MLB", flag: "🇺🇸", season: 2025 }] },
-  { id: "hockey", label: "Hockey", icon: "🏒", count: 5, leagues: [{ id: "57", apiId: "57", name: "NHL", flag: "🇺🇸", season: 2025 }] },
-  { id: "tennis", label: "Tennis", icon: "🎾", count: 18, leagues: [{ id: "atp", apiId: "atp", name: "ATP Tour", flag: "🌍", season: 2025 },{ id: "wta", apiId: "wta", name: "WTA Tour", flag: "🌍", season: 2025 }] },
-  { id: "mma", label: "MMA / Boxing", icon: "🥊", count: 3, leagues: [{ id: "ufc", apiId: "ufc", name: "UFC", flag: "🌍", season: 2025 },{ id: "boxing", apiId: "boxing", name: "Boxing", flag: "🌍", season: 2025 }] },
-  { id: "golf", label: "Golf", icon: "⛳", count: 2, leagues: [{ id: "pga", apiId: "pga", name: "PGA Tour", flag: "🇺🇸", season: 2025 }] },
+  { id: "football",   label: "Am. Football", icon: "🏈", count: 6, leagues: [{ id: "1nfl", apiId: "1nfl", name: "NFL", flag: "🇺🇸", season: 2025 },{ id: "2nfl", apiId: "2nfl", name: "NCAA Football", flag: "🇺🇸", season: 2025 }] },
+  { id: "baseball",   label: "Baseball", icon: "⚾", count: 12, leagues: [{ id: "1mlb", apiId: "1mlb", name: "MLB", flag: "🇺🇸", season: 2025 }] },
+  { id: "hockey",     label: "Hockey", icon: "🏒", count: 5, leagues: [{ id: "57", apiId: "57", name: "NHL", flag: "🇺🇸", season: 2025 }] },
+  { id: "tennis",     label: "Tennis", icon: "🎾", count: 18, leagues: [{ id: "atp", apiId: "atp", name: "ATP Tour", flag: "🌍", season: 2025 },{ id: "wta", apiId: "wta", name: "WTA Tour", flag: "🌍", season: 2025 }] },
+  { id: "mma",        label: "MMA / Boxing", icon: "🥊", count: 3, leagues: [{ id: "ufc", apiId: "ufc", name: "UFC", flag: "🌍", season: 2025 },{ id: "boxing", apiId: "boxing", name: "Boxing", flag: "🌍", season: 2025 }] },
+  { id: "golf",       label: "Golf", icon: "⛳", count: 2, leagues: [{ id: "pga", apiId: "pga", name: "PGA Tour", flag: "🇺🇸", season: 2025 }] },
 ];
 
 const ANALYSIS_TYPES = [
-  { id: "full", label: "Full Context", icon: "📊" },
-  { id: "h2h", label: "Head to Head", icon: "⚔️" },
-  { id: "form", label: "Recent Form", icon: "📈" },
-  { id: "injuries", label: "Injuries", icon: "🏥" },
-  { id: "value", label: "Value Bets", icon: "💰" },
+  { id: "full",        label: "Full Context",   icon: "📊" },
+  { id: "h2h",         label: "Head to Head",   icon: "⚔️" },
+  { id: "form",        label: "Recent Form",    icon: "📈" },
+  { id: "injuries",    label: "Injuries",       icon: "🏥" },
+  { id: "value",       label: "Value Bets",     icon: "💰" },
   { id: "predictions", label: "AI Predictions", icon: "🤖" },
 ];
 
@@ -72,7 +72,7 @@ function Paywall({ onSubscribe, loading }) {
       </div>
       <div style={{ padding: "28px 20px 0", flex: 1 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
-          {[["🏆","World Cup 2026","All 104 FIFA World Cup matches"],["⚽","All Sports","Soccer, NBA, NFL, MLB, NHL, UFC"],["🔍","Real-Time Data","Live fixtures and real injury data"],["🤖","AI Analysis","Claude AI generates full betting context"],["⚔️","H2H Stats","Full head to head with match timelines"],["📊","Confidence Score","AI rates each bet 0 to 100"]].map(([icon,title,desc],i) => (
+          {[["🏆","World Cup 2026","All 104 FIFA matches"],["⚽","All Sports","Soccer, NBA, NFL, MLB, NHL, UFC"],["🔍","Real-Time Data","Live fixtures and results"],["🤖","AI Analysis","Claude AI full betting context"],["⚔️","H2H Stats","Full head to head with timelines"],["📊","Confidence Score","AI rates each bet 0 to 100"]].map(([icon,title,desc],i) => (
             <div key={i} style={{ background: "white", borderRadius: 16, padding: 16, boxShadow: "0 2px 12px rgba(0,50,200,0.06)" }}>
               <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
               <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>{title}</div>
@@ -117,7 +117,7 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
     async function load() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/h2h?eventId=${game.id}&leagueSlug=${leagueSlug}`);
+        const res = await fetch(`${API_BASE}/h2h?eventId=${game.id}&leagueSlug=${leagueSlug || "fifa.world"}`);
         const data = await res.json();
         setDetail(data);
       } catch (e) { setDetail(null); }
@@ -129,11 +129,9 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(10,15,30,.6)", zIndex: 200, display: "flex", alignItems: "flex-end", backdropFilter: "blur(4px)" }} onClick={onClose}>
       <div style={{ background: "white", borderRadius: "20px 20px 0 0", width: "100%", maxHeight: "85vh", overflow: "hidden", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
-        {/* Handle */}
         <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
           <div style={{ width: 40, height: 4, background: "#e0e4f0", borderRadius: 2 }} />
         </div>
-        {/* Header */}
         <div style={{ padding: "12px 16px 14px", borderBottom: "1px solid #f0f2ff" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div style={{ fontSize: 10, color: "#889", fontWeight: 600 }}>{game.date}</div>
@@ -141,19 +139,18 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-              <TeamLogo logo={game.homeLogo} name={game.homeTeam} size={32} />
+              <TeamLogo logo={game.homeLogo} name={game.homeTeam} size={28} />
               <span style={{ fontSize: 13, fontWeight: 800 }}>{game.homeTeam}</span>
             </div>
-            <div style={{ textAlign: "center", padding: "4px 12px", background: "#0057ff", borderRadius: 10, margin: "0 8px" }}>
+            <div style={{ textAlign: "center", padding: "4px 14px", background: "#0057ff", borderRadius: 10, margin: "0 8px", flexShrink: 0 }}>
               <span style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color: "white", letterSpacing: 2 }}>{game.homeScore} - {game.awayScore}</span>
             </div>
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
               <span style={{ fontSize: 13, fontWeight: 800, textAlign: "right" }}>{game.awayTeam}</span>
-              <TeamLogo logo={game.awayLogo} name={game.awayTeam} size={32} />
+              <TeamLogo logo={game.awayLogo} name={game.awayTeam} size={28} />
             </div>
           </div>
         </div>
-        {/* Content */}
         <div style={{ overflowY: "auto", flex: 1, padding: "16px" }}>
           {loading && (
             <div style={{ textAlign: "center", padding: "40px 0", color: "#889" }}>
@@ -169,39 +166,36 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
           )}
           {!loading && detail && !detail.error && (
             <>
-              {detail.venue && (
-                <div style={{ fontSize: 11, color: "#889", textAlign: "center", marginBottom: 16 }}>📍 {detail.venue}</div>
-              )}
+              {detail.venue && <div style={{ fontSize: 11, color: "#889", textAlign: "center", marginBottom: 16 }}>📍 {detail.venue}</div>}
               {detail.timeline && detail.timeline.length > 0 ? (
                 <>
-                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 16, fontWeight: 700, marginBottom: 12, color: "#0a0f1e" }}>⚽ Goal Timeline</div>
+                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>⚽ Goal Timeline</div>
                   <div style={{ position: "relative" }}>
-                    {/* Centre line */}
                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "#e8eeff", transform: "translateX(-50%)" }} />
                     {detail.timeline.map((event, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 12, position: "relative" }}>
+                      <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 14, position: "relative" }}>
                         {event.isHome ? (
                           <>
-                            <div style={{ flex: 1, textAlign: "right", paddingRight: 12 }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#0a0f1e" }}>{event.player}</div>
+                            <div style={{ flex: 1, textAlign: "right", paddingRight: 14 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700 }}>{event.player}</div>
                               {event.assist && <div style={{ fontSize: 10, color: "#889" }}>Assist: {event.assist}</div>}
-                              <div style={{ fontSize: 10, color: "#0057ff", fontWeight: 600 }}>{event.homeScore} - {event.awayScore}</div>
+                              <div style={{ fontSize: 10, color: "#0057ff", fontWeight: 600, marginTop: 2 }}>{event.homeScore} - {event.awayScore}</div>
                             </div>
-                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#0057ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(0,87,255,.3)" }}>
-                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.1 }}>{event.minute}</span>
+                            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#0047dd,#0099ff)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(0,87,255,.3)" }}>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.2 }}>{event.minute}</span>
                             </div>
-                            <div style={{ flex: 1, paddingLeft: 12 }} />
+                            <div style={{ flex: 1, paddingLeft: 14 }} />
                           </>
                         ) : (
                           <>
-                            <div style={{ flex: 1, paddingRight: 12 }} />
-                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ff4444", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(255,68,68,.3)" }}>
-                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.1 }}>{event.minute}</span>
+                            <div style={{ flex: 1, paddingRight: 14 }} />
+                            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#cc0000,#ff4444)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1, boxShadow: "0 2px 8px rgba(255,68,68,.3)" }}>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.2 }}>{event.minute}</span>
                             </div>
-                            <div style={{ flex: 1, paddingLeft: 12 }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#0a0f1e" }}>{event.player}</div>
+                            <div style={{ flex: 1, paddingLeft: 14 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700 }}>{event.player}</div>
                               {event.assist && <div style={{ fontSize: 10, color: "#889" }}>Assist: {event.assist}</div>}
-                              <div style={{ fontSize: 10, color: "#ff4444", fontWeight: 600 }}>{event.homeScore} - {event.awayScore}</div>
+                              <div style={{ fontSize: 10, color: "#ff4444", fontWeight: 600, marginTop: 2 }}>{event.homeScore} - {event.awayScore}</div>
                             </div>
                           </>
                         )}
@@ -210,9 +204,7 @@ function MatchDetailModal({ game, leagueSlug, onClose }) {
                   </div>
                 </>
               ) : (
-                <div style={{ textAlign: "center", padding: "20px 0", color: "#889", fontSize: 12 }}>
-                  No goal timeline available for this match.
-                </div>
+                <div style={{ textAlign: "center", padding: "20px 0", color: "#889", fontSize: 12 }}>No goal timeline available for this match.</div>
               )}
             </>
           )}
@@ -234,39 +226,32 @@ function H2HSection({ match, leagueSlug }) {
     async function load() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/h2h?homeId=${match.homeId}&awayId=${match.awayId}&leagueSlug=${leagueSlug}`);
+        const res = await fetch(`${API_BASE}/h2h?home=${encodeURIComponent(match.home)}&away=${encodeURIComponent(match.away)}&leagueSlug=${leagueSlug || "fifa.world"}`);
         const d = await res.json();
         setData(d);
       } catch (e) { setData(null); }
       setLoading(false);
     }
-    if (match.homeId && match.awayId) load();
+    if (match.home && match.away) load();
     else { setData(null); setLoading(false); }
-  }, [match.homeId, match.awayId]);
-
-  if (!match.homeId || !match.awayId) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
-        <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
-        <div style={{ fontSize: 13 }}>H2H data only available for soccer matches.</div>
-      </div>
-    );
-  }
+  }, [match.home, match.away]);
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
-        <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
-        <div style={{ fontSize: 13 }}>Loading head to head data...</div>
+      <div style={{ textAlign: "center", padding: "50px 20px", color: "#889" }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>⚔️</div>
+        <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700, color: "#0a0f1e", marginBottom: 6 }}>Loading H2H Data</div>
+        <div style={{ fontSize: 12 }}>Searching recent match history...</div>
       </div>
     );
   }
 
-  if (!data || data.error) {
+  if (!data || (data.homeForm?.length === 0 && data.awayForm?.length === 0 && data.h2h?.length === 0)) {
     return (
-      <div style={{ textAlign: "center", padding: "40px 20px", color: "#889" }}>
-        <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
-        <div style={{ fontSize: 13 }}>H2H data not available right now.</div>
+      <div style={{ textAlign: "center", padding: "50px 20px", color: "#889" }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>⚔️</div>
+        <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700, color: "#0a0f1e", marginBottom: 6 }}>No H2H Data Found</div>
+        <div style={{ fontSize: 12 }}>Could not find recent match history for these teams.</div>
       </div>
     );
   }
@@ -281,45 +266,43 @@ function H2HSection({ match, leagueSlug }) {
   const awayGames = filterGames(data.awayForm || [], awayFilter);
   const h2hGames = data.h2h || [];
 
-  function GameRow({ game, perspective }) {
-    const isWin = game.result === "W";
-    const isLoss = game.result === "L";
+  function StatsSummary({ games }) {
+    const w = games.filter(g => g.result === "W").length;
+    const d = games.filter(g => g.result === "D").length;
+    const l = games.filter(g => g.result === "L").length;
+    if (games.length === 0) return null;
     return (
-      <div onClick={() => setSelectedGame(game)} style={{ background: "white", borderRadius: 12, padding: "10px 12px", marginBottom: 8, boxShadow: "0 1px 8px rgba(0,50,200,.05)", cursor: "pointer", border: "1px solid #f0f2ff", transition: "all .15s" }}
-        onMouseEnter={e => e.currentTarget.style.borderColor = "#0057ff"}
-        onMouseLeave={e => e.currentTarget.style.borderColor = "#f0f2ff"}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <ResultBadge result={game.result} />
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <TeamLogo logo={game.homeLogo} name={game.homeTeam} size={16} />
-              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.homeTeam}</span>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "#0057ff", margin: "0 2px" }}>{game.homeScore} - {game.awayScore}</span>
-              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.awayTeam}</span>
-              <TeamLogo logo={game.awayLogo} name={game.awayTeam} size={16} />
-            </div>
-            <div style={{ fontSize: 10, color: "#889" }}>{game.date} · {game.isHome ? "Home" : "Away"} · {game.competition}</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {[["W", w, "#e8f8ee", "#00aa44"], ["D", d, "#fff8e8", "#ff9900"], ["L", l, "#fee8e8", "#ff4444"]].map(([label, count, bg, color]) => (
+          <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "10px 0", textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color }}>{count}</div>
+            <div style={{ fontSize: 9, color, fontWeight: 700 }}>{label}</div>
           </div>
-          <div style={{ fontSize: 11, color: "#aab" }}>›</div>
-        </div>
+        ))}
       </div>
     );
   }
 
-  function StatsSummary({ games, teamName }) {
-    const w = games.filter(g => g.result === "W").length;
-    const d = games.filter(g => g.result === "D").length;
-    const l = games.filter(g => g.result === "L").length;
-    const total = games.length;
-    if (total === 0) return null;
+  function GameRow({ game }) {
     return (
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        {[["W", w, "#e8f8ee", "#00aa44"],["D", d, "#fff8e8", "#ff9900"],["L", l, "#fee8e8", "#ff4444"]].map(([label, count, bg, color]) => (
-          <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "8px 0", textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color }}>{count}</div>
-            <div style={{ fontSize: 9, color, fontWeight: 700 }}>{label}</div>
+      <div onClick={() => setSelectedGame(game)}
+        style={{ background: "white", borderRadius: 12, padding: "11px 12px", marginBottom: 8, boxShadow: "0 1px 8px rgba(0,50,200,.05)", cursor: "pointer", border: "1.5px solid #f0f2ff", transition: "border-color .15s" }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#0057ff"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "#f0f2ff"}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ResultBadge result={game.result} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3, flexWrap: "wrap" }}>
+              <TeamLogo logo={game.homeLogo} name={game.homeTeam} size={16} />
+              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.homeTeam}</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#0057ff", margin: "0 3px" }}>{game.homeScore} - {game.awayScore}</span>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>{game.awayTeam}</span>
+              <TeamLogo logo={game.awayLogo} name={game.awayTeam} size={16} />
+            </div>
+            <div style={{ fontSize: 10, color: "#aab" }}>{game.date} · {game.isHome ? "Home" : "Away"} · {game.competition}</div>
           </div>
-        ))}
+          <div style={{ fontSize: 14, color: "#ccd", flexShrink: 0 }}>›</div>
+        </div>
       </div>
     );
   }
@@ -328,25 +311,31 @@ function H2HSection({ match, leagueSlug }) {
     <>
       {selectedGame && <MatchDetailModal game={selectedGame} leagueSlug={leagueSlug} onClose={() => setSelectedGame(null)} />}
 
-      {/* H2H summary stats */}
+      {/* H2H summary box */}
       {activeTab === "h2h" && h2hGames.length > 0 && (
         <div style={{ background: "white", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 12px rgba(0,50,200,.05)" }}>
-          <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 16, fontWeight: 700, marginBottom: 10, color: "#0a0f1e" }}>Head to Head Summary</div>
+          <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 16, fontWeight: 700, marginBottom: 10 }}>Head to Head Summary</div>
           <div style={{ display: "flex", gap: 8 }}>
             {(() => {
-              const hw = h2hGames.filter(g => g.homeTeam === match.home && parseInt(g.homeScore) > parseInt(g.awayScore)).length +
-                         h2hGames.filter(g => g.awayTeam === match.home && parseInt(g.awayScore) > parseInt(g.homeScore)).length;
-              const aw = h2hGames.filter(g => g.homeTeam === match.away && parseInt(g.homeScore) > parseInt(g.awayScore)).length +
-                         h2hGames.filter(g => g.awayTeam === match.away && parseInt(g.awayScore) > parseInt(g.homeScore)).length;
-              const draws = h2hGames.filter(g => g.homeScore === g.awayScore).length;
+              const hw = h2hGames.filter(g => {
+                const hScore = parseInt(g.homeScore || 0);
+                const aScore = parseInt(g.awayScore || 0);
+                return (g.homeTeam === match.home && hScore > aScore) || (g.awayTeam === match.home && aScore > hScore);
+              }).length;
+              const aw = h2hGames.filter(g => {
+                const hScore = parseInt(g.homeScore || 0);
+                const aScore = parseInt(g.awayScore || 0);
+                return (g.homeTeam === match.away && hScore > aScore) || (g.awayTeam === match.away && aScore > hScore);
+              }).length;
+              const draws = h2hGames.filter(g => parseInt(g.homeScore || 0) === parseInt(g.awayScore || 0)).length;
               return [
                 [match.home, hw, "#eef3ff", "#0057ff"],
                 ["Draws", draws, "#fff8e8", "#ff9900"],
                 [match.away, aw, "#f5eeff", "#7722ff"],
               ].map(([label, count, bg, color]) => (
                 <div key={label} style={{ flex: 1, background: bg, borderRadius: 10, padding: "10px 4px", textAlign: "center" }}>
-                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 24, fontWeight: 800, color }}>{count}</div>
-                  <div style={{ fontSize: 9, color: "#889", fontWeight: 600, marginTop: 2 }}>{label}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 22, fontWeight: 800, color }}>{count}</div>
+                  <div style={{ fontSize: 9, color: "#889", fontWeight: 600, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</div>
                 </div>
               ));
             })()}
@@ -355,58 +344,54 @@ function H2HSection({ match, leagueSlug }) {
       )}
 
       {/* Tab switcher */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto" }}>
-        {[["h2h","⚔️ H2H"],["home","📊 " + match.home],["away","📊 " + match.away]].map(([tab, label]) => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{ fontSize: 11, fontWeight: 700, padding: "8px 14px", borderRadius: 8, cursor: "pointer", border: "1.5px solid", borderColor: activeTab === tab ? "#0057ff" : "#e0e8ff", background: activeTab === tab ? "#eef3ff" : "white", color: activeTab === tab ? "#0057ff" : "#556", whiteSpace: "nowrap", transition: "all .18s" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto", paddingBottom: 2 }}>
+        {[["h2h", "⚔️ H2H"], ["home", `🔵 ${match.home}`], ["away", `🔴 ${match.away}`]].map(([tab, label]) => (
+          <button key={tab} onClick={() => setActiveTab(tab)} style={{ fontSize: 11, fontWeight: 700, padding: "8px 14px", borderRadius: 8, cursor: "pointer", border: "1.5px solid", borderColor: activeTab === tab ? "#0057ff" : "#e0e8ff", background: activeTab === tab ? "#eef3ff" : "white", color: activeTab === tab ? "#0057ff" : "#556", whiteSpace: "nowrap", transition: "all .18s", flexShrink: 0 }}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* H2H Games */}
+      {/* H2H tab */}
       {activeTab === "h2h" && (
-        h2hGames.length > 0 ? (
-          h2hGames.map((g, i) => <GameRow key={i} game={g} />)
-        ) : (
-          <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent H2H meetings found.</div>
-        )
+        h2hGames.length > 0
+          ? h2hGames.map((g, i) => <GameRow key={i} game={g} />)
+          : <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent H2H meetings found.</div>
       )}
 
-      {/* Home team form */}
+      {/* Home form tab */}
       {activeTab === "home" && (
         <>
           <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-            {[["all","All"],["home","Home"],["away","Away"]].map(([f, label]) => (
+            {[["all", "All"], ["home", "Home"], ["away", "Away"]].map(([f, label]) => (
               <button key={f} onClick={() => setHomeFilter(f)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid", borderColor: homeFilter === f ? "#0057ff" : "#e0e8ff", background: homeFilter === f ? "#eef3ff" : "white", color: homeFilter === f ? "#0057ff" : "#556" }}>
                 {label}
               </button>
             ))}
           </div>
-          <StatsSummary games={homeGames} teamName={match.home} />
-          {homeGames.length > 0 ? (
-            homeGames.map((g, i) => <GameRow key={i} game={g} />)
-          ) : (
-            <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent results found.</div>
-          )}
+          <StatsSummary games={homeGames} />
+          {homeGames.length > 0
+            ? homeGames.map((g, i) => <GameRow key={i} game={g} />)
+            : <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No results found for this filter.</div>
+          }
         </>
       )}
 
-      {/* Away team form */}
+      {/* Away form tab */}
       {activeTab === "away" && (
         <>
           <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-            {[["all","All"],["home","Home"],["away","Away"]].map(([f, label]) => (
+            {[["all", "All"], ["home", "Home"], ["away", "Away"]].map(([f, label]) => (
               <button key={f} onClick={() => setAwayFilter(f)} style={{ fontSize: 10, fontWeight: 700, padding: "5px 12px", borderRadius: 6, cursor: "pointer", border: "1.5px solid", borderColor: awayFilter === f ? "#0057ff" : "#e0e8ff", background: awayFilter === f ? "#eef3ff" : "white", color: awayFilter === f ? "#0057ff" : "#556" }}>
                 {label}
               </button>
             ))}
           </div>
-          <StatsSummary games={awayGames} teamName={match.away} />
-          {awayGames.length > 0 ? (
-            awayGames.map((g, i) => <GameRow key={i} game={g} />)
-          ) : (
-            <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No recent results found.</div>
-          )}
+          <StatsSummary games={awayGames} />
+          {awayGames.length > 0
+            ? awayGames.map((g, i) => <GameRow key={i} game={g} />)
+            : <div style={{ textAlign: "center", padding: "30px 20px", color: "#889", fontSize: 12 }}>No results found for this filter.</div>
+          }
         </>
       )}
     </>
@@ -443,9 +428,9 @@ export default function ReleyzApp() {
     try {
       const res = await fetch(`${API_BASE}/subscribe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: `user_${Date.now()}` }) });
       const data = await res.json();
-      if (data.url) { window.location.href = data.url; }
+      if (data.url) window.location.href = data.url;
       else throw new Error(data.error || "Failed");
-    } catch (err) { alert("Could not start checkout."); }
+    } catch { alert("Could not start checkout."); }
     setSubscribeLoading(false);
   };
 
@@ -458,7 +443,7 @@ export default function ReleyzApp() {
       else if (data.noFixtures) setNoFixturesMsg(data.message);
       else if (data.matches?.length > 0) setMatches(data.matches);
       else setNoFixturesMsg("No upcoming fixtures right now. Check back soon.");
-    } catch (err) { setMatchError("Could not load fixtures. Please try again."); }
+    } catch { setMatchError("Could not load fixtures. Please try again."); }
     setLoadingMatches(false);
   };
 
@@ -483,11 +468,11 @@ export default function ReleyzApp() {
       setAnalysisResult(data);
       setAnalysisTab("overview");
       if (data.bettingAngles) {
-        const newBets = data.bettingAngles.map(angle => ({
+        const newBets = data.bettingAngles.map(a => ({
           match: selectedMatch.home + " vs " + selectedMatch.away,
           league: activeLeague.name + " " + activeSport.icon,
-          pick: angle.pick, reasoning: angle.reasoning,
-          conf: data.confidenceScore || 70, value: angle.value || "Good", risk: angle.risk || "Medium",
+          pick: a.pick, reasoning: a.reasoning,
+          conf: data.confidenceScore || 70, value: a.value || "Good", risk: a.risk || "Medium",
         }));
         setValueHistory(prev => [...newBets, ...prev].slice(0, 20));
       }
@@ -497,9 +482,7 @@ export default function ReleyzApp() {
   };
 
   const rc = r => r === "Low" ? "#00aa44" : r === "Medium" ? "#ff9900" : "#ff4444";
-  const vc = v => v === "Excellent" ? "#0057ff" : v === "Good" ? "#0099cc" : "#889";
   const isWC = activeLeague.id === "wc2026";
-  const isSoccer = activeSport.id === "soccer";
 
   if (!isSubscribed) return <Paywall onSubscribe={handleSubscribe} loading={subscribeLoading} />;
 
@@ -583,7 +566,7 @@ export default function ReleyzApp() {
             {isWC && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#FFB800" }} />}
           </div>
           <div className="drawer-section-label">All Sports</div>
-          {SPORTS.map((sport) => (
+          {SPORTS.map(sport => (
             <div key={sport.id}>
               <div className={`drawer-sport-row ${activeSport.id === sport.id ? "active" : ""}`} onClick={() => setExpandedSport(expandedSport === sport.id ? null : sport.id)}>
                 <div className="drawer-sport-icon">{sport.icon}</div>
@@ -592,7 +575,7 @@ export default function ReleyzApp() {
                 <div className={`drawer-sport-chevron ${expandedSport === sport.id ? "expanded" : ""}`}>▶</div>
               </div>
               <div className="drawer-leagues" style={{ maxHeight: expandedSport === sport.id ? `${sport.leagues.length * 42}px` : "0" }}>
-                {sport.leagues.filter(l => l.id !== "wc2026").map((league) => (
+                {sport.leagues.filter(l => l.id !== "wc2026").map(league => (
                   <div key={league.id} className={`drawer-league-row ${activeLeague.id === league.id ? "active" : ""}`} onClick={() => handleLeagueSelect(sport, league)}>
                     <div className="drawer-league-flag">{league.flag}</div>
                     <div className="drawer-league-name">{league.name}</div>
@@ -648,7 +631,6 @@ export default function ReleyzApp() {
               </div>
             </div>
           </div>
-
           <div style={{ padding: "16px 16px 8px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700 }}>Fixtures</div>
@@ -660,15 +642,15 @@ export default function ReleyzApp() {
             {!loadingMatches && matches.length === 0 && !matchError && !offSeason && !noFixturesMsg && (
               <div style={{ textAlign: "center", padding: "40px 20px", color: "#aab" }}><div style={{ fontSize: 32, marginBottom: 10 }}>🏟</div><div style={{ fontSize: 14, fontWeight: 700, color: "#334", marginBottom: 6 }}>No fixtures yet</div><div style={{ fontSize: 12 }}>Open the menu to select a league</div></div>
             )}
-            {matches.map((m,i) => (
-              <div key={i} className={`match-card ${isWC ? "wc" : ""} ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i*0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
+            {matches.map((m, i) => (
+              <div key={i} className={`match-card ${isWC ? "wc" : ""} ${selectedMatch === m ? "selected" : ""} fade-up`} style={{ animationDelay: `${i * 0.05}s` }} onClick={() => { setSelectedMatch(m); setAnalysisResult(null); }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: isWC ? "#cc8800" : "#0057ff", background: isWC ? "#fff8e6" : "#eef3ff", padding: "3px 9px", borderRadius: 5 }}>
                     {isWC ? "🏆 FIFA WORLD CUP" : `${activeSport.icon} ${activeLeague.name}`}
                   </div>
                   <div style={{ fontSize: 10, color: "#889" }}>📅 {m.date} · {m.time}</div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
                     <TeamLogo logo={m.homeLogo} name={m.home} size={36} />
                     <div><div style={{ fontSize: 14, fontWeight: 800 }}>{m.home}</div><div style={{ fontSize: 9, color: "#aab" }}>Home</div></div>
@@ -683,7 +665,7 @@ export default function ReleyzApp() {
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#0057ff", minWidth: 28 }}>{m.conf}%</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: getConfColor(m.conf), minWidth: 28 }}>{m.conf}%</span>
                   <div style={{ flex: 1, height: 4, background: "#eef0f8", borderRadius: 2, overflow: "hidden" }}>
                     <div style={{ width: `${m.conf}%`, height: "100%", background: isWC ? "linear-gradient(90deg,#cc8800,#FFD700)" : "linear-gradient(90deg,#0047dd,#00aaff)", borderRadius: 2 }} />
                   </div>
@@ -692,12 +674,11 @@ export default function ReleyzApp() {
               </div>
             ))}
           </div>
-
           {selectedMatch && (
             <div style={{ padding: "0 16px 16px" }} className="fade-up">
               <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Analysis Scope</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
-                {ANALYSIS_TYPES.map((a) => (
+                {ANALYSIS_TYPES.map(a => (
                   <div key={a.id} className={`analysis-chip ${activeAnalysis.includes(a.id) ? "active" : ""}`} onClick={() => toggleAnalysis(a.id)}>
                     <div style={{ fontSize: 18, marginBottom: 4 }}>{a.icon}</div>
                     <div style={{ fontSize: 10, fontWeight: 600, color: activeAnalysis.includes(a.id) ? "#0057ff" : "#445" }}>{a.label}</div>
@@ -750,17 +731,14 @@ export default function ReleyzApp() {
                   </div>
                 </div>
               </div>
-
-              {/* Tabs — Overview and H2H only */}
-              <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto" }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
                 {[["overview","📊 Overview"],["h2h","⚔️ Head to Head"]].map(([tab, label]) => (
                   <button key={tab} className={`atab ${analysisTab === tab ? "active" : ""}`} onClick={() => setAnalysisTab(tab)}>{label}</button>
                 ))}
               </div>
-
               {analysisTab === "overview" && (
                 <>
-                  {analysisResult.sections?.map((s,i) => (
+                  {analysisResult.sections?.map((s, i) => (
                     <div key={i} className="section-card">
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                         <span style={{ fontSize: 18 }}>{s.icon}</span>
@@ -769,7 +747,7 @@ export default function ReleyzApp() {
                       <p style={{ fontSize: 12, color: "#556", lineHeight: 1.8, marginBottom: s.stats?.length ? 12 : 0 }}>{s.content}</p>
                       {s.stats?.length > 0 && (
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: s.keyPoints?.length ? 12 : 0 }}>
-                          {s.stats.map((st,j) => (
+                          {s.stats.map((st, j) => (
                             <div key={j} style={{ background: "#f5f7ff", border: "1px solid #e8eeff", borderRadius: 8, padding: "8px 10px", display: "flex", justifyContent: "space-between" }}>
                               <span style={{ fontSize: 10, color: "#889" }}>{st.label}</span>
                               <span style={{ fontSize: 12, fontWeight: 700 }}>{st.value} {st.trend === "up" ? "↑" : st.trend === "down" ? "↓" : "→"}</span>
@@ -777,7 +755,7 @@ export default function ReleyzApp() {
                           ))}
                         </div>
                       )}
-                      {s.keyPoints?.map((p,j) => (
+                      {s.keyPoints?.map((p, j) => (
                         <div key={j} style={{ display: "flex", gap: 8, marginBottom: 5 }}>
                           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#0057ff", marginTop: 5, flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: "#445", lineHeight: 1.6 }}>{p}</span>
@@ -796,9 +774,8 @@ export default function ReleyzApp() {
                   </div>
                 </>
               )}
-
               {analysisTab === "h2h" && (
-                <H2HSection match={selectedMatch} leagueSlug={activeLeague.slug || "eng.1"} />
+                <H2HSection match={selectedMatch} leagueSlug={activeLeague.slug || "fifa.world"} />
               )}
             </>
           )}
@@ -824,9 +801,9 @@ export default function ReleyzApp() {
               <div style={{ fontSize: 13, color: "#889", marginBottom: 24, lineHeight: 1.7 }}>Run an analysis on any match and the AI betting angles will automatically appear here.</div>
               <button onClick={() => setActivePage("matches")} style={{ background: "#0057ff", color: "white", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Browse Matches</button>
             </div>
-          ) : valueHistory.map((item,i) => (
+          ) : valueHistory.map((item, i) => (
             <div key={i} style={{ background: "white", borderRadius: 18, padding: 16, marginBottom: 12, boxShadow: "0 2px 14px rgba(0,50,200,.06)", border: "2px solid #eef3ff" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "linear-gradient(135deg,#0047dd,#0099ff)", color: "white", fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 5, letterSpacing: 1, marginBottom: 10 }}>{item.value.toUpperCase()} VALUE</div>
+              <div style={{ display: "inline-flex", alignItems: "center", background: "linear-gradient(135deg,#0047dd,#0099ff)", color: "white", fontSize: 9, fontWeight: 800, padding: "3px 10px", borderRadius: 5, letterSpacing: 1, marginBottom: 10 }}>{item.value.toUpperCase()} VALUE</div>
               <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{item.match}</div>
               <div style={{ fontSize: 11, color: "#889", marginBottom: 8 }}>{item.league}</div>
               <div style={{ fontFamily: "'Barlow Condensed'", fontSize: 18, fontWeight: 700, color: "#0057ff", marginBottom: 10 }}>{item.pick}</div>
@@ -870,7 +847,7 @@ export default function ReleyzApp() {
       )}
 
       <div className="bottom-nav">
-        {[{id:"matches",icon:"⚽",label:"Matches"},{id:"analysis",icon:"📊",label:"Analysis"},{id:"value",icon:"💰",label:"Value"},{id:"profile",icon:"👤",label:"Profile"}].map((tab) => (
+        {[{id:"matches",icon:"⚽",label:"Matches"},{id:"analysis",icon:"📊",label:"Analysis"},{id:"value",icon:"💰",label:"Value"},{id:"profile",icon:"👤",label:"Profile"}].map(tab => (
           <div key={tab.id} className={`nav-tab ${activePage === tab.id ? "active" : ""}`} onClick={() => setActivePage(tab.id)}>
             <div className="nav-tab-line" />
             <div className="nav-tab-icon">{tab.icon}</div>
